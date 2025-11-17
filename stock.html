@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>재고 관리 - 멍밥</title>
+    <title>기준정보 관리 - 멍밥</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,82 +12,204 @@
             <h2>멍밥 재고 관리 시스템</h2>
             <ul>
                 <li><a href="index.html">메인 대시보드</a></li>
-                <li><a href="admin.html">기준정보 관리</a></li>
+                <li class="active"><a href="admin.html">기준정보 관리</a></li>
                 <li><a href="purchase.html">입고 관리 (발주)</a></li>
                 <li><a href="sales.html">출고 관리 (주문)</a></li>
-                <li class="active"><a href="stock.html">재고 관리</a></li> 
+                <li><a href="stock.html">재고 관리</a></li>
                 <li><a href="reports.html">리포트</a></li>
             </ul>
         </nav>
         <main class="dashboard">
-            <h1>재고 관리</h1>
+            <h1>기준정보 관리</h1>
 
             <div class="tabs">
-                <button class="tab-link active">재고 이동</button>
-                <button class="tab-link">재고 조정</button>
-                <button class="tab-link">재고 실사</button>
+                <button class="tab-link active">상품 마스터</button>
+                <button class="tab-link">공급처 (거래처)</button>
+                <button class="tab-link">고객사</button>
+                <button class="tab-link">공급 단가 관리</button> 
             </div>
 
-            <div id="tab-move" class="tab-content active">
-                <h3>창고/로케이션 간 재고 이동</h3>
-                <div class="form-wrapper">
-                    <div class="form-group">
-                        <label for="move-sku">상품 SKU</label>
-                        <input type="text" id="move-sku" placeholder="SKU-D01">
-                    </div>
-                    <div class="form-group">
-                        <label for="move-from">From 로케이션</label>
-                        <input type="text" id="move-from" placeholder="A-01-01">
-                    </div>
-                    <div class="form-group">
-                        <label for="move-to">To 로케이션</label>
-                        <input type="text" id="move-to" placeholder="B-01-01">
-                    </div>
-                    <div class="form-group">
-                        <label for="move-qty">이동 수량</label>
-                        <input type="number" id="move-qty" placeholder="10">
-                    </div>
-                    <button classs="btn-primary">이동 실행</button>
+            <div class="tab-content active">
+                <div class="toolbar"><button class="btn-primary">+ 신규 상품 등록</button></div>
+                <div class="table-wrapper">
+                    <table class="sortable-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable-header">SKU</th>
+                                <th class="sortable-header">상품명</th>
+                                <th class="sortable-header">카테고리</th>
+                                <th class="sortable-header">안전재고(EA)</th>
+                                <th class="sortable-header">현재고</th> <th class="sortable-header">입고단가(원)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>SKU-D01</td>
+                                <td>프리미엄 그레인프리 사료 (10kg)</td>
+                                <td>사료 (개)</td>
+                                <td>50</td>
+                                <td>60</td> <td>35000</td>
+                            </tr>
+                            <tr>
+                                <td>SKU-C01</td>
+                                <td>웰니스 고양이 캔 (참치) (85g)</td>
+                                <td>간식 (고양이)</td>
+                                <td>200</td>
+                                <td>150</td> <td>1200</td>
+                            </tr>
+                            <tr>
+                                <td>SKU-T01</td>
+                                <td>유기농 닭가슴살 육포 (200g)</td>
+                                <td>간식 (개)</td>
+                                <td>100</td>
+                                <td>120</td> <td>4500</td>
+                            </tr>
+                            <tr>
+                                <td>SKU-D02</td>
+                                <td>처방식 강아지 사료 (관절) (5kg)</td>
+                                <td>사료 (개)</td>
+                                <td>30</td>
+                                <td>25</td> <td>42000</td>
+                            </tr>
+                             <tr>
+                                <td>SKU-C02</td>
+                                <td>내추럴 발란스 고양이 사료 (3kg)</td>
+                                <td>사료 (고양이)</td>
+                                <td>40</td>
+                                <td>45</td> <td>28000</td>
+                            </tr>
+                            </tbody>
+                    </table>
                 </div>
             </div>
 
-            <div id="tab-adjust" class="tab-content">
-                <h3>재고 수량 조정 (파손, 분실)</h3>
-                 <div class="form-wrapper">
-                    <div class="form-group">
-                        <label for="adj-sku">상품 SKU</label>
-                        <input type="text" id="adj-sku" placeholder="SKU-T01">
+            <div class="tab-content">
+                <div class="toolbar">
+                    <input type="text" placeholder="공급처명 또는 ID 검색..." style="min-width: 250px;">
+                    <button class="btn-primary">검색</button>
+                    <div class="toolbar-buttons">
+                        <button class="btn-primary">+ 신규 공급처 등록</button>
                     </div>
-                     <div class="form-group">
-                        <label for="adj-loc">로케이션</label>
-                        <input type="text" id="adj-loc" placeholder="A-01-02">
-                    </div>
-                    <div class="form-group">
-                        <label for="adj-current">현재고 (전산)</label>
-                        <input type="number" id="adj-current" value="120" disabled>
-                    </div>
-                    <div class="form-group">
-                        <label for="adj-new">조정 수량 (실제)</label>
-                        <input type="number" id="adj-new" placeholder="118">
-                    </div>
-                    <div class="form-group">
-                        <label for="adj-reason">조정 사유</label>
-                        <input type="text" id="adj-reason" placeholder="파손 -2">
-                    </div>
-                    <button class="btn-primary">조정 실행</button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="sortable-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable-header">공급처 ID</th> <th class="sortable-header">공급처명</th>
+                                <th class="sortable-header">담당자</th>
+                                <th class="sortable-header">연락처</th>
+                                <th class="sortable-header">주요 품목</th> </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>S-001</td> <td>(주)튼튼펫푸드</td>
+                                <td>김철수</td>
+                                <td>02-1234-5678</td>
+                                <td>사료</td> </tr>
+                            <tr>
+                                <td>S-002</td> <td>내추럴멍 컴퍼니</td>
+                                <td>박영희</td>
+                                <td>031-777-8888</td>
+                                <td>간식</td> </tr>
+                            <tr>
+                                <td>S-003</td> <td>캣's초이스</td>
+                                <td>이유미</td>
+                                <td>010-9876-5432</td>
+                                <td>간식</td> </tr>
+                            <tr>
+                                <td>S-004</td> <td>로얄캐닌 코리아</td>
+                                <td>최민호</td>
+                                <td>02-555-1234</td>
+                                <td>사료</td> </tr>
+                            <tr>
+                                <td>S-005</td> <td>(주)우리펫 용품</td>
+                                <td>윤지수</td>
+                                <td>070-456-7890</td>
+                                <td>용품</td> </tr>
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-content">
+                <div class="toolbar"><button class="btn-primary">+ 신규 고객사 등록</button></div>
+                <div class="table-wrapper">
+                    <table class="sortable-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable-header">고객사명</th>
+                                <th class="sortable-header">지역</th>
+                                <th class="sortable-header">담당자</th>
+                                <th class="sortable-header">연락처</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>행복한 펫샵 (송파점)</td>
+                                <td>서울</td> <td>최민준</td>
+                                <td>02-444-5555</td>
+                            </tr>
+                            <tr>
+                                <td>냥이월드 (강남점)</td>
+                                <td>서울</td> <td>한지아</td>
+                                <td>02-666-7777</td>
+                            </tr>
+                            <tr>
+                                <td>멀티펫 (온라인)</td>
+                                <td>경기</td> <td>윤대표</td>
+                                <td>070-111-2222</td>
+                            </tr>
+                            <tr>
+                                <td>24시 튼튼 동물병원</td>
+                                <td>경기</td> <td>박원장</td>
+                                <td>031-777-1111</td>
+                            </tr>
+                            <tr>
+                                <td>멍멍이 하우스 (부평)</td>
+                                <td>인천</td> <td>이사랑</td>
+                                <td>032-555-6666</td>
+                            </tr>
+                            <tr>
+                                <td>펫프렌즈 (마포점)</td>
+                                <td>서울</td> <td>김친구</td>
+                                <td>02-333-2222</td>
+                            </tr>
+                            <tr>
+                                <td>도그앤캣 (수원)</td>
+                                <td>경기</td> <td>정수아</td>
+                                <td>031-111-2222</td>
+                            </tr>
+                            <tr>
+                                <td>VIP 동물병원</td>
+                                <td>서울</td> <td>최원장</td>
+                                <td>02-999-8888</td>
+                            </tr>
+                            <tr>
+                                <td>펫마트 (온라인)</td>
+                                <td>경기</td> <td>박팀장</td>
+                                <td>070-456-1234</td>
+                            </tr>
+                             <tr>
+                                <td>고양이 왕국 (인천)</td>
+                                <td>인천</td> <td>이집사</td>
+                                <td>032-456-7890</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
             
-            <div id="tab-count" class="tab-content">
-                <h3>재고 실사</h3>
-                <p>월말/분기말 등 특정 시점에 전산 재고와 실제 재고를 비교하는 기능의 데모 UI입니다.</p>
-                <button class="btn-primary">재고 실사표 생성</button>
+            <div class="tab-content">
+                <div class="toolbar"><button class="btn-primary">+ 신규 단가 등록</button></div>
+                <div class="table-wrapper">
+                    </div>
             </div>
 
         </main>
         </div>
     
     <script>
+        // 탭 기능
         document.querySelectorAll('.tab-link').forEach((button, index) => {
             button.addEventListener('click', () => {
                 document.querySelectorAll('.tab-link').forEach(btn => btn.classList.remove('active'));
@@ -97,5 +219,6 @@
             });
         });
     </script>
+    <script src="sort-table.js"></script>
 </body>
 </html>
