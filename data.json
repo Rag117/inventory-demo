@@ -1,0 +1,14 @@
+{
+  "inventoryStatus": {
+    "labels": ["상품A", "상품B", "상품C", "상품D"],
+    "data": [120, 80, 150, 45]
+  },
+  "lowStockItems": [
+    {"name": "상품D", "sku": "SKU-004", "current": 45, "safe": 50},
+    {"name": "상품F", "sku": "SKU-006", "current": 10, "safe": 20}
+  ],
+  "expiryItems": [
+    {"name": "상품A-Lot1", "expiryDate": "2025-11-20", "remaining": 3},
+    {"name": "상품G-Lot2", "expiryDate": "2025-11-28", "remaining": 11}
+  ]
+}
