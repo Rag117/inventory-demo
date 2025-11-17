@@ -211,3 +211,63 @@ button:hover {
 .status-done { color: #10B981; font-weight: bold; } /* Green */
 .status-progress { color: #3B82F6; font-weight: bold; } /* Blue */
 .status-wait { color: #F59E0B; font-weight: bold; } /* Orange */
+
+/* ---
+   [추가] purchase.html 조회 필터 박스 스타일
+--- */
+
+#search-filter-box {
+    padding-bottom: 10px;
+    border-color: #D1D5DB; /* 다른 위젯보다 조금 더 강조 */
+}
+
+/* 필터 항목들을 그리드로 정렬 */
+.filter-grid {
+    display: grid;
+    /* 폼 항목이 최소 250px, 공간이 남으면 1fr씩 나눠가짐 */
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+/* 폼 그룹 스타일 재정의 (필터용) */
+.filter-grid .form-group {
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+}
+.filter-grid .form-group label {
+    font-size: 0.9em;
+    font-weight: 500;
+    color: #374151;
+}
+.filter-grid .form-group input,
+.filter-grid .form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #D1D5DB;
+    border-radius: 4px;
+    box-sizing: border-box; /* 패딩이 너비에 포함되도록 */
+    margin-top: 5px;
+    background-color: #FFF;
+}
+.filter-grid .form-group input[type="date"] {
+    padding: 7px;
+}
+
+/* 조회/등록 버튼 정렬 */
+#search-toolbar {
+    margin-top: 15px;
+    margin-bottom: 0;
+    padding: 0;
+    justify-content: flex-end; /* 버튼을 오른쪽으로 정렬 */
+}
+
+/* 테이블 위에 추가된 제목 */
+.table-title {
+    font-size: 1.25em;
+    color: #111827;
+    margin-top: 30px;
+    margin-bottom: -10px; /* 테이블과의 간격 조절 */
+}

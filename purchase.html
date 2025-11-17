@@ -48,7 +48,126 @@
                         </tr>
                         <tr>
                             <td>PO-202511-002</td>
+                            <t<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>입고 관리 - 멍밥</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="sidebar">
+            <h2>멍밥 재고 관리 시스템</h2>
+            <ul>
+                <li><a href="index.html">메인 대시보드</a></li>
+                <li><a href="admin.html">기준정보 관리</a></li>
+                <li class="active"><a href="purchase.html">입고 관리 (발주)</a></li>
+                <li><a href="sales.html">출고 관리 (주문)</a></li>
+                <li><a href="stock.html">재고 관리</a></li>
+                <li><a href="reports.html">리포트</a></li>
+            </ul>
+        </nav>
+        <main class="dashboard">
+            <h1>입고 관리 (발주서 조회)</h1>
+            
+            <div class="widget" id="search-filter-box">
+                <div class="filter-grid">
+                    <div class="form-group">
+                        <label for="filter-date-start">발주 일자</label>
+                        <input type="date" id="filter-date-start" value="2025-11-01">
+                    </div>
+                    <div class="form-group">
+                        <label for="filter-date-end">~</label>
+                        <input type="date" id="filter-date-end" value="2025-11-17">
+                    </div>
+                    <div class="form-group">
+                        <label for="filter-supplier">공급처</label>
+                        <input type="text" id="filter-supplier" placeholder="(주)튼튼펫푸드">
+                    </div>
+                    <div class="form-group">
+                        <label for="filter-po-id">발주 번호</label>
+                        <input type="text" id="filter-po-id" placeholder="PO-202511-001">
+                    </div>
+                    <div class="form-group">
+                        <label for="filter-status">상태</label>
+                        <select id="filter-status">
+                            <option value="">전체</option>
+                            <option value="wait">발주</option>
+                            <option value="progress">부분 입고</option>
+                            <option value="done">입고 완료</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="toolbar" id="search-toolbar">
+                    <button class="btn-primary">조회</button>
+                    <button>+ 신규 발주서 등록</button>
+                </div>
+            </div>
+
+            <h2 class="table-title">발주서 목록 (조회 결과)</h2>
+            <div class="table-wrapper">
+                <table class="sortable-table">
+                    <thead>
+                        <tr>
+                            <th class="sortable-header">발주 번호</th>
+                            <th class="sortable-header">공급처</th>
+                            <th class="sortable-header">총 발주액(원)</th>
+                            <th class="sortable-header">발주 일자</th>
+                            <th class="sortable-header">상태</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>PO-202511-001</td>
+                            <td>(주)튼튼펫푸드</td>
+                            <td>3,500,000</td>
+                            <td>2025-11-10</td>
+                            <td><span class="status-done">입고 완료</span></td>
+                            <td><button>상세보기</button></td>
+                        </tr>
+                        <tr>
+                            <td>PO-202511-002</td>
                             <td>내추럴멍 컴퍼니</td>
+                            <td>900,000</td>
+                            <td>2025-11-15</td>
+                            <td><span class="status-progress">부분 입고</span></td>
+                            <td><button class="btn-primary">입고 처리</button></td>
+                        </tr>
+                        <tr>
+                            <td>PO-202511-003</td>
+                            <td>캣's초이스</td>
+                            <td>1,200,000</td>
+                            <td>2025-11-17</td>
+                            <td><span class="status-wait">발주</span></td>
+                            <td><button>상세보기</button>
+                        </tr>
+                        <tr>
+                            <td>PO-202511-004</td>
+                            <td>(주)우리펫 용품</td>
+                            <td>450,000</td>
+                            <td>2025-11-18</td>
+                            <td><span class="status-wait">발주</span></td>
+                            <td><button>상세보기</button></td>
+                        </tr>
+                        <tr>
+                            <td>PO-202511-005</td>
+                            <td>로얄캐닌 코리아</td>
+                            <td>2,100,000</td>
+                            <td>2025-11-18</td>
+                            <td><span class="status-wait">발주</span></td>
+                            <td><button>상세보기</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+        </div>
+    <script src="sort-table.js"></script>
+</body>
+</html>d>내추럴멍 컴퍼니</td>
                             <td>900,000</td>
                             <td>2025-11-15</td>
                             <td><span class="status-progress">부분 입고</span></td>
