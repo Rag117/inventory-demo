@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>기준정보 관리 - 재고 시스템</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="sidebar">
+            <h2>재고 관리 시스템</h2>
+            <ul>
+                <li><a href="index.html">메인 대시보드</a></li>
+                <li class="active"><a href="admin.html">기준정보 관리</a></li>
+                <li><a href="purchase.html">입고 관리 (구매)</a></li>
+                <li><a href="sales.html">출고 관리 (판매)</a></li>
+                <li><a href="stock.html">재고 관리</a></li>
+                <li><a href="reports.html">리포트</a></li>
+            </ul>
+        </nav>
+        <main class="dashboard">
+            <h1>기준정보 관리 - 상품 마스터</h1>
+            
+            <div class="toolbar">
+                <button class="btn-primary">+ 신규 상품 등록</button>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>상품 SKU</th>
+                            <th>상품명</th>
+                            <th>카테고리</th>
+                            <th>현재고</th>
+                            <th>안전재고</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>SKU-001</td>
+                            <td>상품A</td>
+                            <td>식품</td>
+                            <td>120</td>
+                            <td>50</td>
+                            <td><button>수정</button></td>
+                        </tr>
+                        <tr>
+                            <td>SKU-002</td>
+                            <td>상품B</td>
+                            <td>음료</td>
+                            <td>80</td>
+                            <td>50</td>
+                            <td><button>수정</button></td>
+                        </tr>
+                        <tr>
+                            <td>SKU-003</td>
+                            <td>상품C</td>
+                            <td>생활용품</td>
+                            <td>150</td>
+                            <td>30</td>
+                            <td><button>수정</button>
+                        </tr>
+                        <tr>
+                            <td>SKU-004</td>
+                            <td>상품D (재고부족)</td>
+                            <td>식품</td>
+                            <td>45</td>
+                            <td>50</td>
+                            <td><button>수정</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+        </div>
+</body>
+</html>

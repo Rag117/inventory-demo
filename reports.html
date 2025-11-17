@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>리포트 - 재고 시스템</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="sidebar">
+            <h2>재고 관리 시스템</h2>
+            <ul>
+                <li><a href="index.html">메인 대시보드</a></li>
+                <li><a href="admin.html">기준정보 관리</a></li>
+                <li><a href="purchase.html">입고 관리 (구매)</a></li>
+                <li><a href="sales.html">출고 관리 (판매)</a></li>
+                <li><a href="stock.html">재고 관리</a></li>
+                <li class="active"><a href="reports.html">리포트</a></li>
+            </ul>
+        </nav>
+        <main class="dashboard">
+            <h1>리포트 - 재고 현황 리포트</h1>
+            
+            <div class="toolbar">
+                <input type="date" value="2025-11-01"> ~ <input type="date" value="2025-11-17">
+                <button>조회</button>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>상품 SKU</th>
+                            <th>상품명</th>
+                            <th>기초 재고</th>
+                            <th>총 입고</th>
+                            <th>총 출고</th>
+                            <th>기말 재고</th>
+                            <th>재고 자산(원가)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>SKU-001</td>
+                            <td>상품A</td>
+                            <td>100</td>
+                            <td>50</td>
+                            <td>-30</td>
+                            <td>120</td>
+                            <td>1,200,000원</td>
+                        </tr>
+                        <tr>
+                            <td>SKU-002</td>
+                            <td>상품B</td>
+                            <td>50</td>
+                            <td>30</td>
+                            <td>0</td>
+                            <td>80</td>
+                            <td>800,000원</td>
+                        </tr>
+                        <tr>
+                            <td>SKU-003</td>
+                            <td>상품C</td>
+                            <td>200</td>
+                            <td>0</td>
+                            <td>-50</td>
+                            <td>150</td>
+                            <td>3,000,000원</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+        </div>
+</body>
+</html>

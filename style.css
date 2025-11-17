@@ -11,3 +11,130 @@ body { font-family: sans-serif; margin: 0; background-color: #f4f7f6; }
 .widget h3 { margin-top: 0; }
 .widget ul { list-style: none; padding: 0; }
 .widget ul li { padding: 5px 0; border-bottom: 1px solid #eee; }
+/* ========
+   기존 CSS 코드...
+   (body, .container, .sidebar, .dashboard, .widget 등...)
+   ======== */
+
+/* ▼ 여기부터 추가 ▼ */
+
+/* 툴바 (버튼 영역) */
+.toolbar {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+/* 버튼 스타일 */
+button {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+button:hover {
+    background-color: #e0e0e0;
+}
+
+/* 메인 버튼 (파란색) */
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+    border: none;
+}
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+/* 테이블 스타일 */
+.table-wrapper {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    overflow-x: auto; /* 테이블이 화면보다 넓을 경우 가로 스크롤 */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse; /* 테두리 한 줄로 */
+    margin-top: 15px;
+}
+
+th, td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+    min-width: 100px;
+}
+
+th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f9f9f9; /* 짝수 행 배경색 */
+}
+
+/* 상태 표시용 텍스트 */
+.status-done { color: green; font-weight: bold; }
+.status-progress { color: #007bff; font-weight: bold; }
+.status-wait { color: #888; }
+
+/* 탭 메뉴 스타일 (stock.html) */
+.tabs {
+    display: flex;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 20px;
+}
+.tab-link {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px; /* 하단 경계선과 겹치게 */
+}
+.tab-link.active {
+    border-bottom-color: #007bff;
+    font-weight: bold;
+}
+
+/* 탭 콘텐츠 */
+.tab-content {
+    display: none; /* 기본적으로 숨김 */
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.tab-content.active {
+    display: block; /* active 클래스가 붙으면 보임 */
+}
+
+/* 폼 스타일 (stock.html) */
+.form-wrapper {
+    max-width: 500px;
+}
+.form-group {
+    margin-bottom: 15px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+.form-group input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* 패딩이 너비에 포함되도록 */
+}
+.form-group input:disabled {
+    background-color: #eee;
+}

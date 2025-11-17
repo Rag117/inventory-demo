@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>입고 관리 - 재고 시스템</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="sidebar">
+            <h2>재고 관리 시스템</h2>
+            <ul>
+                <li><a href="index.html">메인 대시보드</a></li>
+                <li><a href="admin.html">기준정보 관리</a></li>
+                <li class="active"><a href="purchase.html">입고 관리 (구매)</a></li>
+                <li><a href="sales.html">출고 관리 (판매)</a></li>
+                <li><a href="stock.html">재고 관리</a></li>
+                <li><a href="reports.html">리포트</a></li>
+            </ul>
+        </nav>
+        <main class="dashboard">
+            <h1>입고 관리 (발주서 목록)</h1>
+            
+            <div class="toolbar">
+                <button class="btn-primary">+ 신규 발주서 등록</button>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>발주 번호</th>
+                            <th>공급처</th>
+                            <th>발주 일자</th>
+                            <th>상태</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>PO-202511-001</td>
+                            <td>(주)공급사A</td>
+                            <td>2025-11-10</td>
+                            <td><span class="status-done">입고 완료</span></td>
+                            <td><button>상세보기</button></td>
+                        </tr>
+                        <tr>
+                            <td>PO-202511-002</td>
+                            <td>(주)공급사B</td>
+                            <td>2025-11-15</td>
+                            <td><span class="status-progress">부분 입고</span></td>
+                            <td><button class="btn-primary">입고 처리</button></td>
+                        </tr>
+                        <tr>
+                            <td>PO-202511-003</td>
+                            <td>(주)공급사A</td>
+                            <td>2025-11-17</td>
+                            <td><span class="status-wait">발주</span></td>
+                            <td><button>상세보기</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+        </div>
+</body>
+</html>
