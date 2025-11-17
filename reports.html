@@ -3,75 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>리포트 - 재고 시스템</title>
+    <title>리포트 - 멍밥</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
         <nav class="sidebar">
-            <h2>재고 관리 시스템</h2>
+            <h2>멍밥 재고 관리 시스템</h2>
             <ul>
                 <li><a href="index.html">메인 대시보드</a></li>
                 <li><a href="admin.html">기준정보 관리</a></li>
-                <li><a href="purchase.html">입고 관리 (구매)</a></li>
-                <li><a href="sales.html">출고 관리 (판매)</a></li>
-                <li><a href="stock.html">재고 관리</a></li>
+                <li><a href="purchase.html">입고 관리 (발주)</a></li>
+                <li><a href="sales.html">출고 관리 (주문)</a></li>
                 <li class="active"><a href="reports.html">리포트</a></li>
             </ul>
         </nav>
         <main class="dashboard">
-            <h1>리포트 - 재고 현황 리포트</h1>
+            <h1>리포트</h1>
             
-            <div class="toolbar">
-                <input type="date" value="2025-11-01"> ~ <input type="date" value="2025-11-17">
-                <button>조회</button>
+            <div class="widgets">
+                 <div class="widget" style="grid-column: 1 / -1;">
+                    <h3>월별 매출/수익 리포트</h3>
+                    <canvas id="monthlyProfitChart"></canvas>
+                </div>
             </div>
 
+            <h3>재고 이동 이력 (가상)</h3>
             <div class="table-wrapper">
-                <table>
+                <table class="sortable-table">
                     <thead>
                         <tr>
-                            <th>상품 SKU</th>
-                            <th>상품명</th>
-                            <th>기초 재고</th>
-                            <th>총 입고</th>
-                            <th>총 출고</th>
-                            <th>기말 재고</th>
-                            <th>재고 자산(원가)</th>
+                            <th class="sortable-header">일자</th>
+                            <th class="sortable-header">SKU</th>
+                            <th class="sortable-header">상품명</th>
+                            <th class="sortable-header">유형</th>
+                            <th class="sortable-header">수량</th>
+                            <th class="sortable-header">관련 문서</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>SKU-001</td>
-                            <td>상품A</td>
-                            <td>100</td>
-                            <td>50</td>
-                            <td>-30</td>
-                            <td>120</td>
-                            <td>1,200,000원</td>
+                            <td>2025-11-17</td>
+                            <td>SKU-D01</td>
+                            <td>프리미엄 그레인프리 사료</td>
+                            <td><span class="status-progress">출고</span></td>
+                            <td>-20</td>
+                            <td>SO-202511-002</td>
                         </tr>
                         <tr>
-                            <td>SKU-002</td>
-                            <td>상품B</td>
-                            <td>50</td>
-                            <td>30</td>
-                            <td>0</td>
-                            <td>80</td>
-                            <td>800,000원</td>
+                            <td>2025-11-16</td>
+                            <td>SKU-C01</td>
+                            <td>웰니스 고양이 캔</td>
+                            <td><span class="status-done">입고</span></td>
+                            <td>+500</td>
+                            <td>PO-202511-003</td>
                         </tr>
-                        <tr>
-                            <td>SKU-003</td>
-                            <td>상품C</td>
-                            <td>200</td>
-                            <td>0</td>
-                            <td>-50</td>
-                            <td>150</td>
-                            <td>3,000,000원</td>
+                         <tr>
+                            <td>2025-11-15</td>
+                            <td>SKU-T01</td>
+                            <td>유기농 닭가슴살 육포</td>
+                            <td><span class="status-wait">조정</span></td>
+                            <td>-2</td>
+                            <td>(폐기)</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </main>
         </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            fetch('data.json')
+                .then(response => response.json())
+                .then(data => {
+                    const profitData = data.monthlyProfit;
+                    const ctx = document.getElementById('monthlyProfitChart').getContext('2d');
+                    
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: profitData.labels,
+                            datasets: [
+                                {
+                                    label: '총 매출액 (Price)',
+                                    data: profitData.sales,
+                                    borderColor: '#3B82F6',
+                                    backgroundColor: 'rgba(59, 130, 246, 0.1)', // [수정]
+                                    fill: true,
+                                    tension: 0.3
+                                },
+                                {
+                                    label: '총 원가 (Cost)',
+                                    data: profitData.cost,
+                                    borderColor: '#EF4444', // [수정]
+                                    backgroundColor: 'rgba(239, 68, 68, 0.1)', // [수정]
+                                    fill: true,
+                                    tension: 0.3
+                                }
+                            ]
+                        },
+                        // [수정] 라이트 모드 옵션
+                        options: { 
+                            scales: {
+                                y: { beginAtZero: true, ticks: { color: '#374151' }, grid: { color: '#E5E7EB' } },
+                                x: { ticks: { color: '#374151' }, grid: { color: '#E5E7EB' } }
+                            },
+                            plugins: { legend: { labels: { color: '#374151' } } }
+                        }
+                    });
+                })
+                .catch(error => console.error('리포트 차트 데이터 로딩 실패:', error));
+        });
+    </script>
+    <script src="sort-table.js"></script>
 </body>
 </html>

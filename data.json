@@ -1,42 +1,39 @@
 {
-  "products": [
+  "dashboardInventory": [
     { 
-      "sku": "SKU-001", "name": "상품A (식품)", "category": "식품", 
-      "safeStock": 50, "uom": "EA", 
-      "manageLot": "Y", "manageExpiry": "Y", 
-      "cost": 10000, "price": 15000 
+      "sku": "SKU-D01", "name": "프리미엄 그레인프리 사료 (10kg)",
+      "currentStock": 60, "safeStock": 50
     },
     { 
-      "sku": "SKU-002", "name": "상품B (음료)", "category": "음료", 
-      "safeStock": 50, "uom": "BOX",
-      "manageLot": "Y", "manageExpiry": "Y", 
-      "cost": 12000, "price": 18000 
+      "sku": "SKU-C01", "name": "웰니스 고양이 캔 (참치) (85g)",
+      "currentStock": 150, "safeStock": 200 
     },
     { 
-      "sku": "SKU-004", "name": "상품D (식품)", "category": "식품", 
-      "safeStock": 50, "uom": "EA",
-      "manageLot": "Y", "manageExpiry": "Y", 
-      "cost": 8000, "price": 13000 
+      "sku": "SKU-T01", "name": "유기농 닭가슴살 육포 (200g)",
+      "currentStock": 120, "safeStock": 100 
     },
     { 
-      "sku": "SKU-006", "name": "상품F (냉동)", "category": "냉동", 
-      "safeStock": 20, "uom": "KG",
-      "manageLot": "Y", "manageExpiry": "Y", 
-      "cost": 25000, "price": 35000 
+      "sku": "SKU-D02", "name": "처방식 강아지 사료 (관절) (5kg)",
+      "currentStock": 25, "safeStock": 30 
     },
     { 
-      "sku": "SKU-007", "name": "상품G (생활)", "category": "생활용품", 
-      "safeStock": 30, "uom": "EA",
-      "manageLot": "N", "manageExpiry": "N", 
-      "cost": 5000, "price": 8000 
+      "sku": "SKU-C02", "name": "내추럴 발란스 고양이 사료 (3kg)",
+      "currentStock": 45, "safeStock": 40 
     }
   ],
-  "stockLots": [
-    { "lot": "A-Lot1", "sku": "SKU-001", "qty": 70, "expiryDate": "2025-11-20", "location": "A-01-01" },
-    { "lot": "A-Lot2", "sku": "SKU-001", "qty": 50, "expiryDate": "2026-01-10", "location": "A-01-02" },
-    { "lot": "B-Lot1", "sku": "SKU-002", "qty": 80, "expiryDate": "2026-03-01", "location": "A-02-01" },
-    { "lot": "D-Lot1", "sku": "SKU-004", "qty": 45, "expiryDate": "2025-12-10", "location": "B-01-01" },
-    { "lot": "F-Lot1", "sku": "SKU-006", "qty": 10, "expiryDate": "2026-02-01", "location": "C-01-01" },
-    { "lot": "G-Lot2", "sku": "SKU-007", "qty": 25, "expiryDate": null, "location": "C-01-02" }
-  ]
+  "dashboardExpiry": [
+    { 
+      "name": "프리미엄 그레인프리 사료 (Lot: D01-A)", 
+      "expiryDate": "2025-11-29" 
+    },
+    { 
+      "name": "유기농 닭가슴살 육포 (Lot: T01-B)", 
+      "expiryDate": "2025-12-15" 
+    }
+  ],
+  "monthlyProfit": {
+    "labels": ["8월", "9월", "10월", "11월(진행중)"],
+    "sales": [12000000, 18000000, 15000000, 9500000],
+    "cost": [7000000, 11000000, 9000000, 5000000]
+  }
 }

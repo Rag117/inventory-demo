@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>재고 관리 - 재고 시스템</title>
+    <title>재고 관리 - 멍밥</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <nav class="sidebar">
-            <h2>재고 관리 시스템</h2>
+            <h2>멍밥 재고 관리 시스템</h2>
             <ul>
                 <li><a href="index.html">메인 대시보드</a></li>
                 <li><a href="admin.html">기준정보 관리</a></li>
-                <li><a href="purchase.html">입고 관리 (구매)</a></li>
-                <li><a href="sales.html">출고 관리 (판매)</a></li>
-                <li class="active"><a href="stock.html">재고 관리</a></li>
+                <li><a href="purchase.html">입고 관리 (발주)</a></li>
+                <li><a href="sales.html">출고 관리 (주문)</a></li>
+                <li class="active"><a href="stock.html">재고 관리</a></li> 
                 <li><a href="reports.html">리포트</a></li>
             </ul>
         </nav>
@@ -29,50 +29,50 @@
             </div>
 
             <div id="tab-move" class="tab-content active">
-                <h3>재고 이동 처리</h3>
+                <h3>창고/로케이션 간 재고 이동</h3>
                 <div class="form-wrapper">
                     <div class="form-group">
                         <label for="move-sku">상품 SKU</label>
-                        <input type="text" id="move-sku" placeholder="SKU-001">
+                        <input type="text" id="move-sku" placeholder="SKU-D01">
                     </div>
                     <div class="form-group">
-                        <label for="move-from">From 창고/로케이션</label>
+                        <label for="move-from">From 로케이션</label>
                         <input type="text" id="move-from" placeholder="A-01-01">
                     </div>
                     <div class="form-group">
-                        <label for="move-to">To 창고/로케이션</label>
+                        <label for="move-to">To 로케이션</label>
                         <input type="text" id="move-to" placeholder="B-01-01">
                     </div>
                     <div class="form-group">
                         <label for="move-qty">이동 수량</label>
                         <input type="number" id="move-qty" placeholder="10">
                     </div>
-                    <button class="btn-primary">이동 실행</button>
+                    <button classs="btn-primary">이동 실행</button>
                 </div>
             </div>
 
             <div id="tab-adjust" class="tab-content">
-                <h3>재고 조정 처리</h3>
+                <h3>재고 수량 조정 (파손, 분실)</h3>
                  <div class="form-wrapper">
                     <div class="form-group">
                         <label for="adj-sku">상품 SKU</label>
-                        <input type="text" id="adj-sku" placeholder="SKU-002">
+                        <input type="text" id="adj-sku" placeholder="SKU-T01">
                     </div>
                      <div class="form-group">
-                        <label for="adj-loc">창고/로케이션</label>
+                        <label for="adj-loc">로케이션</label>
                         <input type="text" id="adj-loc" placeholder="A-01-02">
                     </div>
                     <div class="form-group">
-                        <label for="adj-current">현재고</label>
-                        <input type="number" id="adj-current" value="80" disabled>
+                        <label for="adj-current">현재고 (전산)</label>
+                        <input type="number" id="adj-current" value="120" disabled>
                     </div>
                     <div class="form-group">
-                        <label for="adj-new">조정 수량</label>
-                        <input type="number" id="adj-new" placeholder="75">
+                        <label for="adj-new">조정 수량 (실제)</label>
+                        <input type="number" id="adj-new" placeholder="118">
                     </div>
                     <div class="form-group">
                         <label for="adj-reason">조정 사유</label>
-                        <input type="text" id="adj-reason" placeholder="파손, 분실 등">
+                        <input type="text" id="adj-reason" placeholder="파손 -2">
                     </div>
                     <button class="btn-primary">조정 실행</button>
                 </div>
@@ -80,7 +80,8 @@
             
             <div id="tab-count" class="tab-content">
                 <h3>재고 실사</h3>
-                <p>재고 실사 기능은 실제 데이터베이스 연동이 필요합니다. (데모 UI)</p>
+                <p>월말/분기말 등 특정 시점에 전산 재고와 실제 재고를 비교하는 기능의 데모 UI입니다.</p>
+                <button class="btn-primary">재고 실사표 생성</button>
             </div>
 
         </main>
@@ -89,11 +90,8 @@
     <script>
         document.querySelectorAll('.tab-link').forEach((button, index) => {
             button.addEventListener('click', () => {
-                // 모든 버튼과 콘텐츠에서 active 클래스 제거
                 document.querySelectorAll('.tab-link').forEach(btn => btn.classList.remove('active'));
                 document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-                
-                // 클릭된 버튼과 해당 콘텐츠에 active 클래스 추가
                 button.classList.add('active');
                 document.querySelectorAll('.tab-content')[index].classList.add('active');
             });

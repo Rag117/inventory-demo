@@ -1,107 +1,115 @@
 // DOM이 모두 로드되면 스크립트 실행
 document.addEventListener("DOMContentLoaded", () => {
     
-    // data.json 파일에서 원본 데이터 가져오기
     fetch('data.json')
         .then(response => response.json())
         .then(data => {
-            const products = data.products;
-            const stockLots = data.stockLots;
+            // 1. 대시보드 차트 그리기
+            renderInventoryChart(data.dashboardInventory);
             
-            // 오늘 날짜 (계산 기준)
-            // (데모이므로 2025-11-17로 고정)
-            const today = new Date('2025-11-17');
-
-            // 1. SKU별로 현재고 합산
-            const stockSummary = {}; // 예: { "SKU-001": 120, "SKU-002": 80, ... }
-            stockLots.forEach(lot => {
-                stockSummary[lot.sku] = (stockSummary[lot.sku] || 0) + lot.qty;
-            });
-
-            // 2. 대시보드 위젯 그리기
-            renderInventoryChart(products, stockSummary);
-            renderLowStockList(products, stockSummary);
-            renderExpiryList(stockLots, products, today);
+            // 2. 재고 부족 알림
+            renderLowStockList(data.dashboardInventory);
+            
+            // 3. 유통기한 임박 알림
+            renderExpiryList(data.dashboardExpiry);
         })
-        .catch(error => console.error('데이터 로딩 실패:', error));
+        .catch(error => console.error('대시보드 데이터 로딩 실패:', error));
 });
-
 
 /**
  * 1. 실시간 재고 현황 (차트)
- * @param {Array} products - 상품 마스터 목록
- * @param {Object} stockSummary - SKU별 재고 합계
  */
-function renderInventoryChart(products, stockSummary) {
-    const labels = [];
-    const chartData = [];
-
-    products.forEach(p => {
-        labels.push(p.name);
-        chartData.push(stockSummary[p.sku] || 0); // 해당 SKU의 재고 합계
-    });
+function renderInventoryChart(inventory) {
+    const labels = inventory.map(item => item.name);
+    const chartData = inventory.map(item => item.currentStock);
+    const safeData = inventory.map(item => item.safeStock);
 
     const ctx = document.getElementById('inventoryChart').getContext('2d');
     new Chart(ctx, {
         type: 'bar',
         data: {
             labels: labels,
-            datasets: [{
-                label: '현재고',
-                data: chartData,
-                backgroundColor: 'rgba(54, 162, 235, 0.6)'
-            }]
+            datasets: [
+                {
+                    label: '현재고',
+                    data: chartData,
+                    backgroundColor: 'rgba(59, 130, 246, 0.7)', // 파란색
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: '안전재고 (발주점)',
+                    data: safeData,
+                    type: 'line', // 라인 차트로 혼합
+                    borderColor: 'rgba(239, 68, 68, 1)', // [수정] 빨간색
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 0
+                }
+            ]
         },
+        // [수정] 라이트 모드용 차트 옵션
         options: {
-            scales: { y: { beginAtZero: true } }
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: '#374151' }, // [수정] Y축 글자 (어두운색)
+                    grid: { color: '#E5E7EB' } // [수정] Y축 그리드선 (밝게)
+                },
+                x: {
+                    ticks: { color: '#374151' }, // [수정] X축 글자
+                    grid: { display: false } 
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: { color: '#374151' } // [수정] 범례 글자
+                }
+            }
         }
     });
 }
 
 /**
  * 2. 재고 부족 알림 (목록)
- * @param {Array} products - 상품 마스터 목록
- * @param {Object} stockSummary - SKU별 재고 합계
  */
-function renderLowStockList(products, stockSummary) {
+function renderLowStockList(inventory) {
     const lowStockList = document.getElementById('low-stock-list');
-    lowStockList.innerHTML = ''; // 목록 비우기
+    lowStockList.innerHTML = ''; 
 
-    products.forEach(p => {
-        const currentStock = stockSummary[p.sku] || 0;
-        if (currentStock < p.safeStock) {
+    inventory.forEach(item => {
+        if (item.currentStock <= item.safeStock) {
             const li = document.createElement('li');
-            li.textContent = `${p.name} (${p.sku}) - 현재: ${currentStock} (안전: ${p.safeStock})`;
-            li.style.color = 'red';
+            li.textContent = `${item.name} - 현재: ${item.currentStock} (안전: ${item.safeStock})`;
             lowStockList.appendChild(li);
         }
     });
+    if (lowStockList.children.length === 0) {
+        lowStockList.innerHTML = '<li>재고 부족 상품이 없습니다.</li>';
+    }
 }
 
 /**
  * 3. 유통기한 임박 알림 (목록)
- * @param {Array} stockLots - 모든 재고 로트 목록
- * @param {Array} products - 상품 마스터 (이름을 찾기 위해)
- * @param {Date} today - 기준이 되는 오늘 날짜
  */
-function renderExpiryList(stockLots, products, today) {
+function renderExpiryList(expiryItems) {
     const expiryList = document.getElementById('expiry-list');
-    expiryList.innerHTML = ''; // 목록 비우기
-    const alertDays = 30; // 30일 이내 임박 건
+    expiryList.innerHTML = '';
+    const today = new Date(); // 오늘 날짜
 
-    // product 이름을 쉽게 찾기 위한 Map
-    const productMap = new Map(products.map(p => [p.sku, p.name]));
-
-    stockLots.forEach(lot => {
-        const expiryDate = new Date(lot.expiryDate);
+    expiryItems.forEach(item => {
+        const expiryDate = new Date(item.expiryDate);
         const timeDiff = expiryDate.getTime() - today.getTime();
         const daysRemaining = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
-        if (daysRemaining <= alertDays && daysRemaining > 0) {
+        if (daysRemaining <= 30 && daysRemaining > 0) {
             const li = document.createElement('li');
-            const productName = productMap.get(lot.sku) || lot.sku;
-            li.textContent = `${productName} (${lot.lot}) - ${daysRemaining}일 남음 (만료: ${lot.expiryDate})`;
+            li.textContent = `${item.name} - ${daysRemaining}일 남음 (${item.expiryDate})`;
             expiryList.appendChild(li);
         }
     });
+     if (expiryList.children.length === 0) {
+        expiryList.innerHTML = '<li>유통기한 임박 상품이 없습니다.</li>';
+    }
 }
