@@ -1,14 +1,42 @@
 {
-  "inventoryStatus": {
-    "labels": ["상품A", "상품B", "상품C", "상품D"],
-    "data": [120, 80, 150, 45]
-  },
-  "lowStockItems": [
-    {"name": "상품D", "sku": "SKU-004", "current": 45, "safe": 50},
-    {"name": "상품F", "sku": "SKU-006", "current": 10, "safe": 20}
+  "products": [
+    { 
+      "sku": "SKU-001", "name": "상품A (식품)", "category": "식품", 
+      "safeStock": 50, "uom": "EA", 
+      "manageLot": "Y", "manageExpiry": "Y", 
+      "cost": 10000, "price": 15000 
+    },
+    { 
+      "sku": "SKU-002", "name": "상품B (음료)", "category": "음료", 
+      "safeStock": 50, "uom": "BOX",
+      "manageLot": "Y", "manageExpiry": "Y", 
+      "cost": 12000, "price": 18000 
+    },
+    { 
+      "sku": "SKU-004", "name": "상품D (식품)", "category": "식품", 
+      "safeStock": 50, "uom": "EA",
+      "manageLot": "Y", "manageExpiry": "Y", 
+      "cost": 8000, "price": 13000 
+    },
+    { 
+      "sku": "SKU-006", "name": "상품F (냉동)", "category": "냉동", 
+      "safeStock": 20, "uom": "KG",
+      "manageLot": "Y", "manageExpiry": "Y", 
+      "cost": 25000, "price": 35000 
+    },
+    { 
+      "sku": "SKU-007", "name": "상품G (생활)", "category": "생활용품", 
+      "safeStock": 30, "uom": "EA",
+      "manageLot": "N", "manageExpiry": "N", 
+      "cost": 5000, "price": 8000 
+    }
   ],
-  "expiryItems": [
-    {"name": "상품A-Lot1", "expiryDate": "2025-11-20", "remaining": 3},
-    {"name": "상품G-Lot2", "expiryDate": "2025-11-28", "remaining": 11}
+  "stockLots": [
+    { "lot": "A-Lot1", "sku": "SKU-001", "qty": 70, "expiryDate": "2025-11-20", "location": "A-01-01" },
+    { "lot": "A-Lot2", "sku": "SKU-001", "qty": 50, "expiryDate": "2026-01-10", "location": "A-01-02" },
+    { "lot": "B-Lot1", "sku": "SKU-002", "qty": 80, "expiryDate": "2026-03-01", "location": "A-02-01" },
+    { "lot": "D-Lot1", "sku": "SKU-004", "qty": 45, "expiryDate": "2025-12-10", "location": "B-01-01" },
+    { "lot": "F-Lot1", "sku": "SKU-006", "qty": 10, "expiryDate": "2026-02-01", "location": "C-01-01" },
+    { "lot": "G-Lot2", "sku": "SKU-007", "qty": 25, "expiryDate": null, "location": "C-01-02" }
   ]
 }

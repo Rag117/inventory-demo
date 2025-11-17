@@ -19,6 +19,7 @@
                 <li><a href="reports.html">리포트</a></li>
             </ul>
         </nav>
+
         <main class="dashboard">
             <h1>기준정보 관리 - 상품 마스터</h1>
             
@@ -30,51 +31,77 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>상품 SKU</th>
+                            <th>SKU</th>
                             <th>상품명</th>
+                            <th>단위(UoM)</th>
                             <th>카테고리</th>
-                            <th>현재고</th>
                             <th>안전재고</th>
+                            <th>관리(로트/기한)</th>
+                            <th>입고단가(Cost)</th>
+                            <th>판매단가(Price)</th>
                             <th>관리</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td>SKU-001</td>
-                            <td>상품A</td>
+                            <td>상품A (식품)</td>
+                            <td>EA</td>
                             <td>식품</td>
-                            <td>120</td>
                             <td>50</td>
+                            <td>Y / Y</td>
+                            <td>10,000</td>
+                            <td>15,000</td>
                             <td><button>수정</button></td>
                         </tr>
                         <tr>
                             <td>SKU-002</td>
-                            <td>상품B</td>
+                            <td>상품B (음료)</td>
+                            <td>BOX</td>
                             <td>음료</td>
-                            <td>80</td>
                             <td>50</td>
+                            <td>Y / Y</td>
+                            <td>12,000</td>
+                            <td>18,000</td>
                             <td><button>수정</button></td>
                         </tr>
                         <tr>
-                            <td>SKU-003</td>
-                            <td>상품C</td>
-                            <td>생활용품</td>
-                            <td>150</td>
-                            <td>30</td>
-                            <td><button>수정</button>
+                            <td>SKU-004</td>
+                            <td>상품D (식품)</td>
+                            <td>EA</td>
+                            <td>식품</td>
+                            <td>50</td>
+                            <td>Y / Y</td>
+                            <td>8,000</td>
+                            <td>13,000</td>
+                            <td><button>수정</button></td>
                         </tr>
                         <tr>
-                            <td>SKU-004</td>
-                            <td>상품D (재고부족)</td>
-                            <td>식품</td>
-                            <td>45</td>
-                            <td>50</td>
+                            <td>SKU-006</td>
+                            <td>상품F (냉동)</td>
+                            <td>KG</td>
+                            <td>냉동</td>
+                            <td>20</td>
+                            <td>Y / Y</td>
+                            <td>25,000</td>
+                            <td>35,000</td>
+                            <td><button>수정</button></td>
+                        </tr>
+                        <tr>
+                            <td>SKU-007</td>
+                            <td>상품G (생활)</td>
+                            <td>EA</td>
+                            <td>생활용품</td>
+                            <td>30</td>
+                            <td>N / N</td>
+                            <td>5,000</td>
+                            <td>8,000</td>
                             <td><button>수정</button></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </main>
-        </div>
+    </div>
 </body>
 </html>
