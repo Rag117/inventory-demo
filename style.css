@@ -271,3 +271,46 @@ button:hover {
     margin-top: 30px;
     margin-bottom: -10px; /* 테이블과의 간격 조절 */
 }
+
+/* ---
+   [추가] purchase.html / admin.html 용 툴바 스타일
+--- */
+
+.toolbar.table-toolbar {
+    display: flex;
+    flex-wrap: wrap; /* 화면이 좁아지면 줄바꿈 */
+    align-items: flex-end; /* 하단 정렬 */
+    gap: 10px 20px;
+    padding-bottom: 20px;
+    margin-bottom: -10px; /* 테이블과의 간격 조절 */
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.filter-group label {
+    font-size: 0.9em;
+    font-weight: 500;
+    color: #374151;
+    white-space: nowrap;
+}
+.filter-group input,
+.filter-group select {
+    width: auto;
+    padding: 8px;
+    border: 1px solid #D1D5DB;
+    border-radius: 4px;
+    background-color: #FFF;
+}
+.filter-group input[type="date"] {
+    padding: 7px;
+}
+
+/* 툴바의 오른쪽 버튼 그룹 */
+.toolbar-buttons {
+    margin-left: auto; /* [중요] 버튼을 오른쪽으로 밀어냄 */
+    display: flex;
+    gap: 10px;
+}
