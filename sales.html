@@ -11,7 +11,7 @@
         <nav class="sidebar">
             <h2>멍밥 재고 관리 시스템</h2>
             <ul>
-                <li><a href="index.html">메인 대시보드</a></li>
+                <li><a href="dashboard.html">메인 대시보드</a></li>
                 <li><a href="admin.html">기준정보 관리</a></li>
                 <li><a href="purchase.html">입고 관리 (발주)</a></li>
                 <li class="active"><a href="sales.html">출고 관리 (주문)</a></li>
@@ -27,6 +27,7 @@
                 <button class="btn-primary">+ 신규 주문서 등록</button>
             </div>
 
+            <!-- Tbl_SalesOrders 목록 -->
             <div class="table-wrapper">
                 <table class="sortable-table">
                     <thead>
@@ -40,55 +41,131 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <!-- [수정] 5. 데이터 다양화 -->
+                        <tr>
+                            <td>SO-202511-001</td>
+                            <td>C-2001 (행복한 펫샵)</td>
+                            <td>1,800,000</td>
+                            <td>2025-11-12</td>
+                            <td><span class="status-done">출고 완료</span></td>
+                            <td><button>상세보기</button></td>
+                        </tr>
                         <tr>
                             <td>SO-202511-002</td>
-                            <td>냥이월드 (강남점)</td>
+                            <td>C-2002 (냥이월드)</td>
                             <td>2,500,000</td>
                             <td>2025-11-16</td>
                             <td><span class="status-progress">출고 준비중</span></td>
-                            <td><a href="sales-detail-shipping.html?id=SO-202511-002" class="btn-primary-link">출고 처리</a></td>
+                            <!-- (출고 처리 상세 UI가 하단에 표시됨) -->
+                            <td><a href="#shipping-process" class="btn-primary-link">출고 처리</a></td>
+                        </tr>
+                        <tr>
+                            <td>SO-202511-003</td>
+                            <td>C-2003 (멀티펫)</td>
+                            <td>750,000</td>
+                            <td>2025-11-17</td>
+                            <td><span class="status-wait">주문 접수</span></td>
+                            <td><button>상세보기</button></td>
+                        </tr>
+                         <tr>
+                            <td>SO-202511-004</td>
+                            <td>C-2001 (행복한 펫샵)</td>
+                            <td>450,000</td>
+                            <td>2025-11-18</td>
+                            <td><span class="status-wait">주문 접수</span></td>
+                            <td><button>상세보기</button></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            <div class="widget" style="margin-top: 30px;">
-                <h3>(설계 예시) SO-202511-002 출고 처리 상세</h3>
-                
-                <h4>주문 품목 (Tbl_SalesOrderDetails)</h4>
-                <ul>
-                    <li>SKU-D01 (프리미엄 사료) - 주문: 20개</li>
-                </ul>
+            <!-- 
+              [수정] 5. "출고하는 느낌"이 나도록 UI 전면 개편 
+            -->
+            <div id="shipping-process" class="shipping-steps" style="margin-top: 30px;">
+                <h1>SO-202511-002 출고 처리</h1>
 
-                <h4>재고 할당 (Tbl_StockLots FEFO 조회 결과)</h4>
-                <p>'출고 확정' 시 아래 로트(Lot)에서 재고가 차감됩니다.</p>
-                
-                <table style="width: 100%;">
-                    <thead>
-                        <tr>
-                            <th>SKU</th>
-                            <th>할당 로트 (LotID)</th>
-                            <th>유통기한 (FEFO)</th>
-                            <th>현재고</th>
-                            <th>출고수량</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>SKU-D01</td>
-                            <td>D01-A251110</td>
-                            <td>2025-11-29</td>
-                            <td>20</td>
-                            <td><input type="number" value="20" style="width: 60px;"></td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="modal-footer">
-                     <button class="btn-primary">출고 확정 및 송장 생성</button>
+                <!-- 1단계: 주문 확인 -->
+                <div class="step-card">
+                    <div class="step-header"><h3>1단계: 주문 품목 확인 (Tbl_SalesOrderDetails)</h3></div>
+                    <div class="step-body">
+                        <ul>
+                            <li>SKU-D01 (프리미엄 그레인프리 사료) - <strong>주문수량: 20 EA</strong></li>
+                            <li>SKU-C01 (웰니스 고양이 캔) - <strong>주문수량: 100 EA</strong></li>
+                        </ul>
+                    </div>
                 </div>
+
+                <!-- 2단계: 재고 할당 -->
+                <div class="step-card">
+                    <div class="step-header"><h3>2단계: 재고 할당 (Tbl_StockLots FEFO 추천)</h3></div>
+                    <div class="step-body">
+                        <p>유통기한(FEFO)이 가장 임박한 로트(Lot)가 자동 추천되었습니다.</p>
+                        <div class="table-wrapper" style="margin-top: 0;">
+                            <table class="allocation-table">
+                                <thead>
+                                    <tr>
+                                        <th>상품</th>
+                                        <th>추천 로트 (LotID)</th>
+                                        <th>현재고</th>
+                                        <th>출고수량</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- SKU-D01 (20개) 할당 -->
+                                    <tr>
+                                        <td>SKU-D01 (프리미엄 사료)</td>
+                                        <td>
+                                            <div class="fefo-lot">D01-A251110</div>
+                                            <div class="fefo-lot-expiry">유통기한: 2025-11-29</div>
+                                        </td>
+                                        <td>20 EA</td>
+                                        <td><input type="number" value="20"></td>
+                                    </tr>
+                                    <!-- SKU-C01 (100개) 할당 (2개 로트로 분할) -->
+                                    <tr>
+                                        <td rowspan="2">SKU-C01 (웰니스 캔)</td>
+                                        <td>
+                                            <div class="fefo-lot">C01-A251111</div>
+                                            <div class="fefo-lot-expiry">유통기한: 2026-01-10</div>
+                                        </td>
+                                        <td>100 EA</td>
+                                        <td><input type="number" value="100"></td>
+                                    </tr>
+                                    <!-- (만약 재고가 부족하면 다음 로트가 여기에 표시됨) -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3단계: 출고 확정 -->
+                <div class="step-card">
+                    <div class="step-header"><h3>3단계: 출고 확정 (Tbl_SalesShipments)</h3></div>
+                    <div class="step-body">
+                        <div class="form-group">
+                            <label for="carrier">운송사 (Carrier)</label>
+                            <input type="text" id="carrier" value="자체배송">
+                        </div>
+                        <div class="form-group">
+                            <label for="trackingNo">운송장번호 (TrackingNo)</label>
+                            <input type="text" id="trackingNo" placeholder="운송장 번호 입력...">
+                        </div>
+                         <div class="confirm-shipment">
+                            <!-- 
+                               이 버튼 클릭 시 서버로 Tbl_SalesShipments, Tbl_SalesShipmentLots, 
+                               Tbl_StockTransactions, Tbl_SalesTransactions 생성 및
+                               Tbl_StockLots, Tbl_SalesOrderDetails 업데이트 요청
+                             -->
+                            <button class="btn-primary">출고 확정 및 송장 생성</button>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </main>
     </div>
+    <script src="app.js"></script> <!-- 모달 함수 포함 -->
     <script src="sort-table.js"></script>
 </body>
 </html>

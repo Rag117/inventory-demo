@@ -23,6 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 function sortTableByColumn(table, columnIndex) {
     const tbody = table.querySelector('tbody');
+    if (!tbody) return; // tbody가 없으면 정렬하지 않음
+    
     const rows = Array.from(tbody.querySelectorAll('tr'));
     const header = table.querySelectorAll('th.sortable-header')[columnIndex];
     
@@ -31,8 +33,13 @@ function sortTableByColumn(table, columnIndex) {
 
     // 1. 정렬 로직
     const sortedRows = rows.sort((a, b) => {
-        const aText = a.querySelectorAll('td')[columnIndex].textContent.trim();
-        const bText = b.querySelectorAll('td')[columnIndex].textContent.trim();
+        const aCell = a.querySelectorAll('td')[columnIndex];
+        const bCell = b.querySelectorAll('td')[columnIndex];
+
+        if (!aCell || !bCell) return 0;
+
+        const aText = aCell.textContent.trim();
+        const bText = bCell.textContent.trim();
 
         // 숫자형/텍스트형 자동 감지 (쉼표 포함)
         const aValue = parseValue(aText);
