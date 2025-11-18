@@ -97,6 +97,7 @@ body {
 .widget ul li:last-child {
     border-bottom: none;
 }
+/* 대시보드 알림 색상 */
 #low-stock-list li { color: #EF4444; } /* 재고 부족 (빨간색) */
 #expiry-list li { color: #F59E0B; } /* 유통기한 (주황색) */
 
@@ -157,6 +158,7 @@ th.sortable-header.sort-desc::after {
     margin-bottom: 20px;
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
 }
 button {
     padding: 8px 12px;
@@ -179,6 +181,21 @@ button:hover {
     font-weight: bold;
 }
 .btn-primary:hover {
+    background-color: #2563EB;
+}
+/* a 태그를 버튼처럼 보이게 */
+.btn-primary-link {
+    display: inline-block;
+    padding: 8px 12px;
+    background-color: #3B82F6;
+    color: white;
+    border: none;
+    font-weight: bold;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.9em;
+}
+.btn-primary-link:hover {
     background-color: #2563EB;
 }
 
@@ -211,80 +228,16 @@ button:hover {
 .status-done { color: #10B981; font-weight: bold; } /* Green */
 .status-progress { color: #3B82F6; font-weight: bold; } /* Blue */
 .status-wait { color: #F59E0B; font-weight: bold; } /* Orange */
+.status-danger { color: #EF4444; font-weight: bold; } /* Red */
 
-/* ---
-   [추가] purchase.html 조회 필터 박스 스타일
---- */
 
-#search-filter-box {
-    padding-bottom: 10px;
-    border-color: #D1D5DB; /* 다른 위젯보다 조금 더 강조 */
-}
-
-/* 필터 항목들을 그리드로 정렬 */
-.filter-grid {
-    display: grid;
-    /* 폼 항목이 최소 250px, 공간이 남으면 1fr씩 나눠가짐 */
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 15px 20px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #E5E7EB;
-}
-
-/* 폼 그룹 스타일 재정의 (필터용) */
-.filter-grid .form-group {
-    margin-bottom: 0;
-    display: flex;
-    flex-direction: column;
-}
-.filter-grid .form-group label {
-    font-size: 0.9em;
-    font-weight: 500;
-    color: #374151;
-}
-.filter-grid .form-group input,
-.filter-grid .form-group select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #D1D5DB;
-    border-radius: 4px;
-    box-sizing: border-box; /* 패딩이 너비에 포함되도록 */
-    margin-top: 5px;
-    background-color: #FFF;
-}
-.filter-grid .form-group input[type="date"] {
-    padding: 7px;
-}
-
-/* 조회/등록 버튼 정렬 */
-#search-toolbar {
-    margin-top: 15px;
-    margin-bottom: 0;
-    padding: 0;
-    justify-content: flex-end; /* 버튼을 오른쪽으로 정렬 */
-}
-
-/* 테이블 위에 추가된 제목 */
-.table-title {
-    font-size: 1.25em;
-    color: #111827;
-    margin-top: 30px;
-    margin-bottom: -10px; /* 테이블과의 간격 조절 */
-}
-
-/* ---
-   [추가] purchase.html / admin.html 용 툴바 스타일
---- */
-
+/* --- 툴바 & 필터 그룹 --- */
 .toolbar.table-toolbar {
-    display: flex;
-    flex-wrap: wrap; /* 화면이 좁아지면 줄바꿈 */
     align-items: flex-end; /* 하단 정렬 */
     gap: 10px 20px;
-    padding-bottom: 20px;
+    padding-bottom: 10px;
     margin-bottom: -10px; /* 테이블과의 간격 조절 */
 }
-
 .filter-group {
     display: flex;
     align-items: center;
@@ -307,10 +260,84 @@ button:hover {
 .filter-group input[type="date"] {
     padding: 7px;
 }
-
 /* 툴바의 오른쪽 버튼 그룹 */
 .toolbar-buttons {
     margin-left: auto; /* [중요] 버튼을 오른쪽으로 밀어냄 */
     display: flex;
     gap: 10px;
+}
+
+/* --- 모달 (팝업) --- */
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 1000; 
+    left: 0; 
+    top: 0; 
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.4); 
+}
+.modal-content {
+    background-color: #FFFFFF;
+    margin: 10% auto;
+    padding: 24px;
+    border: 1px solid #E5E7EB;
+    width: 90%;
+    max-width: 800px; /* 기본 모달 너비 */
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.modal-content.modal-sm {
+    max-width: 500px; /* 작은 모달 */
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #E5E7EB;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.25em;
+    color: #111827;
+}
+.close {
+    color: #9CA3AF;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+}
+.close:hover,
+.close:focus {
+    color: #111827;
+}
+.modal-body .form-group {
+    margin-bottom: 15px;
+}
+.modal-body .form-group label {
+    display: block;
+    font-size: 0.9em;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 5px;
+}
+.modal-body .form-group input,
+.modal-body .form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #D1D5DB;
+    border-radius: 4px;
+    box-sizing: border-box; /* 패딩이 너비에 포함되도록 */
+}
+.modal-footer {
+    text-align: right;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #E5E7EB;
 }

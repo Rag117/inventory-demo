@@ -9,6 +9,18 @@
 </head>
 <body>
     <div class="container">
+        <nav class="sidebar">
+            <h2>멍밥 재고 관리 시스템</h2>
+            <ul>
+                <li><a href="index.html">메인 대시보드</a></li>
+                <li><a href="admin.html">기준정보 관리</a></li>
+                <li><a href="purchase.html">입고 관리 (발주)</a></li>
+                <li><a href="sales.html">출고 관리 (주문)</a></li>
+                <li><a href="stock.html">재고 관리</a></li>
+                <li class="active"><a href="reports.html">리포트</a></li>
+                <li><a href="returns.html">반품/환불 관리</a></li>
+            </ul>
+        </nav>
         <main class="dashboard">
             <h1>리포트</h1>
             
@@ -49,22 +61,6 @@
                             <td>-20</td>
                             <td>SO-202511-002</td>
                         </tr>
-                        <tr>
-                            <td>2025-11-15 09:00</td>
-                            <td>SKU-T01</td>
-                            <td>T01-A251115</td>
-                            <td><span class="status-done">IN_PO</span></td>
-                            <td>+150</td>
-                            <td>PO-202511-002</td>
-                        </tr>
-                         <tr>
-                            <td>2025-11-14 14:00</td>
-                            <td>SKU-T01</td>
-                            <td>T01-A251110</td>
-                            <td><span class="status-wait">ADJUST</span></td>
-                            <td>-2</td>
-                            <td>ADJ-001 (파손)</td>
-                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -72,6 +68,7 @@
         </div>
 
     <script>
+        // (데모용 차트 스크립트, reports.html 원본 참조)
         document.addEventListener("DOMContentLoaded", () => {
             // (서버 API 호출 로직으로 변경되어야 함)
         });

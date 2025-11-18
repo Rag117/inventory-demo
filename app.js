@@ -1,16 +1,18 @@
 // DOM이 모두 로드되면 스크립트 실행
 document.addEventListener("DOMContentLoaded", () => {
     
-    fetch('data.json')
+    // [수정] data.json 대신 실제 서버 API를 호출해야 합니다.
+    // 예: fetch('/api/dashboard/summary')
+    fetch('data.json') // (데모용으로 data.json을 유지)
         .then(response => response.json())
         .then(data => {
-            // 1. 대시보드 차트 그리기
+            // 1. 대시보드 차트 그리기 (Tbl_StockLots 합계 기반)
             renderInventoryChart(data.dashboardInventory);
             
-            // 2. 재고 부족 알림
+            // 2. 재고 부족 알림 (Tbl_StockLots 합계 vs Tbl_Products.SafetyStock)
             renderLowStockList(data.dashboardInventory);
             
-            // 3. 유통기한 임박 알림
+            // 3. 유통기한 임박 알림 (Tbl_StockLots.ExpiryDate 기반)
             renderExpiryList(data.dashboardExpiry);
         })
         .catch(error => console.error('대시보드 데이터 로딩 실패:', error));
@@ -41,7 +43,7 @@ function renderInventoryChart(inventory) {
                     label: '안전재고 (발주점)',
                     data: safeData,
                     type: 'line', // 라인 차트로 혼합
-                    borderColor: 'rgba(239, 68, 68, 1)', // [수정] 빨간색
+                    borderColor: 'rgba(239, 68, 68, 1)', // 빨간색
                     backgroundColor: 'rgba(239, 68, 68, 0.1)',
                     borderWidth: 2,
                     fill: false,
@@ -49,22 +51,22 @@ function renderInventoryChart(inventory) {
                 }
             ]
         },
-        // [수정] 라이트 모드용 차트 옵션
+        // 라이트 모드용 차트 옵션
         options: {
             scales: {
                 y: {
                     beginAtZero: true,
-                    ticks: { color: '#374151' }, // [수정] Y축 글자 (어두운색)
-                    grid: { color: '#E5E7EB' } // [수정] Y축 그리드선 (밝게)
+                    ticks: { color: '#374151' }, 
+                    grid: { color: '#E5E7EB' } 
                 },
                 x: {
-                    ticks: { color: '#374151' }, // [수정] X축 글자
+                    ticks: { color: '#374151' }, 
                     grid: { display: false } 
                 }
             },
             plugins: {
                 legend: {
-                    labels: { color: '#374151' } // [수정] 범례 글자
+                    labels: { color: '#374151' } 
                 }
             }
         }

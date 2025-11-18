@@ -5,15 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>입고 관리 - 멍밥</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        .modal { display: none; /* ... (팝업 스타일) ... */ }
-    </style>
 </head>
 <body>
     <div class="container">
+        <nav class="sidebar">
+            <h2>멍밥 재고 관리 시스템</h2>
+            <ul>
+                <li><a href="index.html">메인 대시보드</a></li>
+                <li><a href="admin.html">기준정보 관리</a></li>
+                <li class="active"><a href="purchase.html">입고 관리 (발주)</a></li>
+                <li><a href="sales.html">출고 관리 (주문)</a></li>
+                <li><a href="stock.html">재고 관리</a></li>
+                <li><a href="reports.html">리포트</a></li>
+                <li><a href="returns.html">반품/환불 관리</a></li>
+            </ul>
+        </nav>
         <main class="dashboard">
             <h1>입고 관리 (발주서 조회)</h1>
             
+            <div class="toolbar table-toolbar">
+                <div class="filter-group">
+                    <label>발주 일자:</label>
+                    <input type="date"> ~ <input type="date">
+                </div>
+                <div class="toolbar-buttons">
+                    <button class="btn-primary">+ 신규 발주서 등록</button>
+                </div>
+            </div>
+
             <div class="table-wrapper">
                 <table class="sortable-table">
                     <thead>
@@ -33,7 +52,7 @@
                             <td>900,000</td>
                             <td>2025-11-15</td>
                             <td><span class="status-progress">부분 입고</span></td>
-                            <td><button class="btn-primary" onclick="openReceiveModal('PO-202511-002')">입고 처리</button></td>
+                            <td><button class="btn-primary" onclick="openModal('receiveModal')">입고 처리</button></td>
                         </tr>
                     </tbody>
                 </table>
@@ -42,42 +61,44 @@
     </div>
 
     <div id="receiveModal" class="modal">
-        <div class="modal-content" style="width: 800px;">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2>발주서 입고 처리 (PO-202511-002)</h2>
-            
-            <h3>발주 품목 (Tbl_PurchaseOrderDetails)</h3>
-            <p>입고할 품목의 로트번호, 유통기한, 입고 위치를 입력하세요.</p>
-            
-            <table style="width: 100%;">
-                <thead>
-                    <tr>
-                        <th>SKU</th>
-                        <th>상품명</th>
-                        <th>발주수량</th>
-                        <th>기입고</th>
-                        <th>입고수량</th>
-                        <th>Lot 번호 (PK)</th>
-                        <th>유통기한 (FEFO)</th>
-                        <th>로케이션 (FK)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>SKU-T01</td>
-                        <td>유기농 닭가슴살 육포</td>
-                        <td>150</td>
-                        <td>50</td>
-                        <td><input type="number" value="100" style="width: 60px;"></td>
-                        <td><input type="text" placeholder="로트번호 스캔..."></td>
-                        <td><input type="date"></td>
-                        <td><input type="text" value="A-01-01" style="width: 80px;"></td>
-                    </tr>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>발주서 입고 처리 (PO-202511-002)</h2>
+                <span class="close" onclick="closeModal('receiveModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <h3>발주 품목 (Tbl_PurchaseOrderDetails)</h3>
+                <p>입고할 품목의 로트번호, 유통기한, 입고 위치를 입력하세요.</p>
+                
+                <table style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>상품명</th>
+                            <th>발주수량</th>
+                            <th>기입고</th>
+                            <th>입고수량</th>
+                            <th>Lot 번호 (PK)</th>
+                            <th>유통기한 (FEFO)</th>
+                            <th>로케이션 (FK)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>SKU-T01</td>
+                            <td>유기농 닭가슴살 육포</td>
+                            <td>150</td>
+                            <td>50</td>
+                            <td><input type="number" value="100" style="width: 60px;"></td>
+                            <td><input type="text" placeholder="로트번호 스캔..."></td>
+                            <td><input type="date"></td>
+                            <td><input type="text" value="A-01-01" style="width: 80px;"></td>
+                        </tr>
                     </tbody>
-            </table>
-            
-            <div class="toolbar" style="margin-top: 20px; justify-content: flex-end;">
-                <button>임시 저장</button>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal('receiveModal')">취소</button>
                 <button class="btn-primary">입고 확정</button>
             </div>
         </div>
@@ -85,9 +106,9 @@
 
     <script src="sort-table.js"></script>
     <script>
-        // (간단한 모달 예시)
-        function openReceiveModal(poId) { /* ... (모달 여는 로직) ... */ }
-        function closeModal() { /* ... (모달 닫는 로직) ... */ }
+        // 모달 공통 스크립트
+        function openModal(modalId) { document.getElementById(modalId).style.display = 'block'; }
+        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
     </script>
 </body>
 </html>

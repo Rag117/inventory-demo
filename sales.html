@@ -8,8 +8,25 @@
 </head>
 <body>
     <div class="container">
+        <nav class="sidebar">
+            <h2>멍밥 재고 관리 시스템</h2>
+            <ul>
+                <li><a href="index.html">메인 대시보드</a></li>
+                <li><a href="admin.html">기준정보 관리</a></li>
+                <li><a href="purchase.html">입고 관리 (발주)</a></li>
+                <li class="active"><a href="sales.html">출고 관리 (주문)</a></li>
+                <li><a href="stock.html">재고 관리</a></li>
+                <li><a href="reports.html">리포트</a></li>
+                <li><a href="returns.html">반품/환불 관리</a></li>
+            </ul>
+        </nav>
         <main class="dashboard">
             <h1>출고 관리 (주문서 목록)</h1>
+            
+            <div class="toolbar">
+                <button class="btn-primary">+ 신규 주문서 등록</button>
+            </div>
+
             <div class="table-wrapper">
                 <table class="sortable-table">
                     <thead>
@@ -29,7 +46,7 @@
                             <td>2,500,000</td>
                             <td>2025-11-16</td>
                             <td><span class="status-progress">출고 준비중</span></td>
-                            <td><a href="shipment-detail.html?id=SO-202511-002" class="btn-primary" style="text-decoration: none;">출고 처리</a></td>
+                            <td><a href="sales-detail-shipping.html?id=SO-202511-002" class="btn-primary-link">출고 처리</a></td>
                         </tr>
                     </tbody>
                 </table>
@@ -41,7 +58,6 @@
                 <h4>주문 품목 (Tbl_SalesOrderDetails)</h4>
                 <ul>
                     <li>SKU-D01 (프리미엄 사료) - 주문: 20개</li>
-                    <li>SKU-C01 (웰니스 고양이 캔) - 주문: 100개</li>
                 </ul>
 
                 <h4>재고 할당 (Tbl_StockLots FEFO 조회 결과)</h4>
@@ -65,16 +81,9 @@
                             <td>20</td>
                             <td><input type="number" value="20" style="width: 60px;"></td>
                         </tr>
-                         <tr>
-                            <td>SKU-C01</td>
-                            <td>C01-A251111</td>
-                            <td>2026-01-10</td>
-                            <td>100</td>
-                            <td><input type="number" value="100" style="width: 60px;"></td>
-                        </tr>
                     </tbody>
                 </table>
-                <div class="toolbar" style="margin-top: 20px; justify-content: flex-end;">
+                <div class="modal-footer">
                      <button class="btn-primary">출고 확정 및 송장 생성</button>
                 </div>
             </div>

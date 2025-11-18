@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>기준정보 관리 (ERD Ver.) - 멍밥</title>
+    <title>기준정보 관리 - 멍밥</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,7 +17,7 @@
                 <li><a href="sales.html">출고 관리 (주문)</a></li>
                 <li><a href="stock.html">재고 관리</a></li>
                 <li><a href="reports.html">리포트</a></li>
-                <li class="active"><a href="returns.html">반품/환불 관리</a></li>
+                <li><a href="returns.html">반품/환불 관리</a></li>
             </ul>
         </nav>
         <main class="dashboard">
@@ -61,7 +61,7 @@
             </div>
 
             <div id="tab-partners" class="tab-content">
-                <div class="toolbar"><button class="btn-primary">+ 신규 공급처 등록</button> <button class="btn-primary">+ 신규 고객사 등록</button></div>
+                <div class="toolbar"><button class="btn-primary">+ 신규 공급처</button> <button class="btn-primary">+ 신규 고객사</button></div>
                 <h3>공급처 (Tbl_Suppliers)</h3>
                 <div class="table-wrapper">
                     <table class="sortable-table">
@@ -70,13 +70,12 @@
                                 <th class="sortable-header">ID (PK)</th>
                                 <th class="sortable-header">공급처명</th>
                                 <th class="sortable-header">담당자</th>
-                                <th class="sortable-header">연락처</th>
                                 <th>관리</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>1001</td> <td>(주)튼튼펫푸드</td> <td>김철수</td> <td>02-1234-5678</td>
+                                <td>1001</td> <td>(주)튼튼펫푸드</td> <td>김철수</td>
                                 <td><button>수정</button> <button>주소록(Tbl_SupplierAddresses)</button></td>
                             </tr>
                         </tbody>
@@ -90,13 +89,12 @@
                                 <th class="sortable-header">ID (PK)</th>
                                 <th class="sortable-header">고객사명</th>
                                 <th class="sortable-header">담당자</th>
-                                <th class="sortable-header">연락처</th>
                                 <th>관리</th>
                             </tr>
                         </thead>
                          <tbody>
                             <tr>
-                                <td>2001</td> <td>행복한 펫샵 (송파점)</td> <td>최민준</td> <td>02-444-5555</td>
+                                <td>2001</td> <td>행복한 펫샵 (송파점)</td> <td>최민준</td>
                                 <td><button>수정</button> <button>주소록(Tbl_CustomerAddresses)</button></td>
                             </tr>
                         </tbody>
@@ -125,13 +123,6 @@
                                 <td>2025-01-01</td>
                                 <td>2025-12-31</td>
                             </tr>
-                            <tr>
-                                <td>C-2001 (행복한 펫샵)</td>
-                                <td>SKU-D01</td>
-                                <td>50000 (Price)</td>
-                                <td>2025-01-01</td>
-                                <td>2025-12-31</td>
-                            </tr>
                         </tbody>
                      </table>
                  </div>
@@ -149,7 +140,6 @@
                         </thead>
                         <tbody>
                             <tr> <td>A-01-01</td> <td>1창고 1번 랙 1번 선반</td> </tr>
-                            <tr> <td>B-01-01</td> <td>2창고 반품 보관 구역</td> </tr>
                         </tbody>
                      </table>
                  </div>

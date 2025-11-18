@@ -1,9 +1,5 @@
 /**
  * HTML 테이블을 정렬 가능하게 만드는 스크립트
- * 사용법:
- * 1. <table>에 'sortable-table' 클래스 추가
- * 2. <thead>의 <th>에 'sortable-header' 클래스 추가
- * 3. 이 스크립트 파일을 <body> 끝에 추가
  */
 document.addEventListener('DOMContentLoaded', () => {
     // 정렬 가능한 모든 테이블을 찾습니다.
@@ -38,8 +34,7 @@ function sortTableByColumn(table, columnIndex) {
         const aText = a.querySelectorAll('td')[columnIndex].textContent.trim();
         const bText = b.querySelectorAll('td')[columnIndex].textContent.trim();
 
-        // 숫자형/텍스트형 자동 감지
-        // 쉼표(,)가 포함된 숫자(예: 3,500)도 처리
+        // 숫자형/텍스트형 자동 감지 (쉼표 포함)
         const aValue = parseValue(aText);
         const bValue = parseValue(bText);
 
