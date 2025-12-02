@@ -12,12 +12,10 @@
         <nav class="sidebar">
             <h2>멍밥 재고 관리 시스템</h2>
             <ul>
-                <!-- [수정] 1. 대시보드 활성화 -->
                 <li class="active"><a href="dashboard.html">메인 대시보드</a></li>
                 <li><a href="admin.html">기준정보 관리</a></li>
                 <li><a href="purchase.html">입고 관리 (발주)</a></li>
-                <li><a href="sales.html">출고 관리 (주문)</a></li>
-                <!-- [수정] 2. 누락된 메뉴 추가 -->
+                <li><a href="sales.html">수주 관리 (출고)</a></li>
                 <li><a href="stock.html">재고 관리</a></li>
                 <li><a href="reports.html">리포트</a></li>
                 <li><a href="returns.html">반품/환불 관리</a></li>
@@ -27,30 +25,27 @@
             <h1>메인 대시보드</h1>
             <div class="widgets">
                 <div class="widget" style="grid-column: 1 / -1;">
-                    <h3>주요 사료 재고 현황</h3>
-                    <!-- Tbl_StockLots 합계 기반 -->
-                    <canvas id="inventoryChart"></canvas>
+                    <h3>주요 사료 재고 현황 (Real-time)</h3>
+                    <canvas id="inventoryChart" style="max-height: 300px;"></canvas>
                 </div>
+                
                 <div class="widget">
-                    <h3>재고 부족 알림 (발주점 도달)</h3>
-                    <!-- Tbl_StockLots 합계 vs Tbl_Products.SafetyStock -->
+                    <h3>⚠️ 재고 부족 알림 (발주 필요)</h3>
                     <ul id="low-stock-list">
                         <li>데이터 로딩 중...</li>
                     </ul>
                 </div>
+                
                 <div class="widget">
-                    <h3>유통기한 임박 알림 (30일 이내)</h3>
-                    <!-- Tbl_StockLots.ExpiryDate 기반 -->
+                    <h3>⏳ 유통기한 임박 알림 (30일 이내)</h3>
                     <ul id="expiry-list">
                         <li>데이터 로딩 중...</li>
                     </ul>
                 </div>
             </div>
         </main>
-        </div>
+    </div>
     
-    <!-- data.json은 데모용, 실제로는 서버 API 호출 필요 -->
-    <script src="data.json"></script> 
-    <script src="app.js"></script>
+    <script src="app.js"></script> 
 </body>
 </html>

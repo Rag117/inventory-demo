@@ -2,7 +2,6 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>입고 관리 - 멍밥</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -13,124 +12,74 @@
             <ul>
                 <li><a href="dashboard.html">메인 대시보드</a></li>
                 <li><a href="admin.html">기준정보 관리</a></li>
-                <!-- [수정] 4. 입고 관리 활성화 -->
                 <li class="active"><a href="purchase.html">입고 관리 (발주)</a></li>
-                <li><a href="sales.html">출고 관리 (주문)</a></li>
-                <!-- [수정] 4. 누락된 메뉴 추가 -->
-                <li><a href="stock.html">재고 관리</a></li>
+                <li><a href="sales.html">수주 관리 (출고)</a></li> <li><a href="stock.html">재고 관리</a></li>
                 <li><a href="reports.html">리포트</a></li>
                 <li><a href="returns.html">반품/환불 관리</a></li>
             </ul>
         </nav>
         <main class="dashboard">
-            <h1>입고 관리 (발주서 조회)</h1>
+            <h1>입고 관리 (Purchase Inbound)</h1>
             
-            <div class="toolbar table-toolbar">
-                <div class="filter-group">
-                    <label>발주 일자:</label>
-                    <input type="date" value="2025-11-01"> ~ <input type="date" value="2025-11-18">
-                </div>
-                <div class="toolbar-buttons">
-                    <button class="btn-primary">+ 신규 발주서 등록</button>
-                </div>
+            <div class="toolbar">
+                <button class="btn-primary" onclick="openModal('purchaseModal')">+ 신규 입고 등록</button>
             </div>
 
-            <!-- Tbl_PurchaseOrders 목록 -->
             <div class="table-wrapper">
                 <table class="sortable-table">
                     <thead>
-                        <tr>
-                            <th class="sortable-header">발주 번호 (PO_ID)</th>
-                            <th class="sortable-header">공급처 (SupplierID)</th>
-                            <th class="sortable-header">총 발주액(원)</th>
-                            <th class="sortable-header">발주 일자</th>
-                            <th class="sortable-header">상태</th>
-                            <th>관리</th>
-                        </tr>
+                        <tr><th>발주번호</th><th>공급처</th><th>품목</th><th>수량</th><th>상태</th></tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>PO-202511-001</td>
-                            <td>S-1001 (튼튼펫푸드)</td>
-                            <td>3,500,000</td>
-                            <td>2025-11-10</td>
-                            <td><span class="status-done">입고 완료</span></td>
-                            <td><button>상세보기</button></td>
-                        </tr>
-                        <tr>
-                            <td>PO-202511-002</td>
-                            <td>S-1002 (내추럴멍)</td>
-                            <td>900,000</td>
-                            <td>2025-11-15</td>
-                            <td><span class="status-progress">부분 입고</span></td>
-                            <td><button class="btn-primary" onclick="openModal('receiveModal')">입고 처리</button></td>
-                        </tr>
-                        <tr>
-                            <td>PO-202511-003</td>
-                            <td>S-1003 (캣's초이스)</td>
-                            <td>1,200,000</td>
-                            <td>2025-11-17</td>
-                            <td><span class="status-wait">발주</span></td>
-                            <td><button class="btn-primary" onclick="openModal('receiveModal')">입고 처리</button></td>
-                        </tr>
+                        <tr><td>PO-202511-001</td><td>(주)튼튼펫푸드</td><td>프리미엄 사료 외</td><td>3,500</td><td><span class="status-done">입고 완료</span></td></tr>
+                        <tr><td>PO-202511-002</td><td>내추럴멍</td><td>웰니스 캔</td><td>5,000</td><td><span class="status-done">입고 완료</span></td></tr>
                     </tbody>
                 </table>
             </div>
         </main>
     </div>
 
-    <!-- 
-      '입고 처리' 모달 (Tbl_PurchaseOrderDetails -> Tbl_StockLots 생성)
-    -->
-    <div id="receiveModal" class="modal">
-        <div class="modal-content">
+    <div id="purchaseModal" class="modal">
+        <div class="modal-content modal-sm">
             <div class="modal-header">
-                <h2>발주서 입고 처리 (PO-202511-003)</h2>
-                <span class="close" onclick="closeModal('receiveModal')">&times;</span>
+                <h2>신규 재고 입고 (Stock In)</h2>
+                <span class="close" onclick="closeModal('purchaseModal')">&times;</span>
             </div>
             <div class="modal-body">
-                <h3>발주 품목 (Tbl_PurchaseOrderDetails)</h3>
-                <p>입고할 품목의 로트번호, 유통기한, 입고 위치를 입력하세요.</p>
-                
-                <div class="table-wrapper">
-                    <table style="width: 100%;">
-                        <thead>
-                            <tr>
-                                <th>SKU</th>
-                                <th>상품명</th>
-                                <th>발주수량</th>
-                                <th>기입고</th>
-                                <th>입고수량</th>
-                                <th>Lot 번호 (PK)</th>
-                                <th>유통기한 (FEFO)</th>
-                                <th>로케이션 (FK)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>SKU-C01</td>
-                                <td>웰니스 고양이 캔</td>
-                                <td>1000</td>
-                                <td>0</td>
-                                <td><input type="number" value="1000" style="width: 60px;"></td>
-                                <!-- Tbl_StockLots의 PK/FK 필드 -->
-                                <td><input type="text" placeholder="로트번호 스캔..."></td>
-                                <td><input type="date"></td>
-                                <td><input type="text" value="A-01-01" style="width: 80px;"></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="form-group">
+                    <label>상품 선택 (SKU)</label>
+                    <select id="in-sku" onchange="document.getElementById('in-name').value = this.options[this.selectedIndex].text">
+                        <option value="">상품을 선택하세요</option>
+                        <option value="SKU-D01">SKU-D01 (프리미엄 사료)</option>
+                        <option value="SKU-C01">SKU-C01 (웰니스 캔)</option>
+                        <option value="SKU-T01">SKU-T01 (육포)</option>
+                    </select>
+                    <input type="hidden" id="in-name">
+                </div>
+                <div class="form-group">
+                    <label>입고 수량</label>
+                    <input type="number" id="in-qty" placeholder="수량 입력 (예: 100)" value="100">
+                </div>
+                <div class="form-group">
+                    <label>Lot 번호 생성</label>
+                    <input type="text" id="in-lot" value="LOT-NEW-001">
+                </div>
+                <div class="form-group">
+                    <label>유통기한</label>
+                    <input type="date" id="in-expiry" value="2026-12-31">
+                </div>
+                <div class="form-group">
+                    <label>적재 로케이션</label>
+                    <input type="text" id="in-loc" value="WH01-Temp">
                 </div>
             </div>
             <div class="modal-footer">
-                <button onclick="closeModal('receiveModal')">취소</button>
-                <!-- 서버로 Tbl_StockLots 생성 및 Tbl_StockTransactions 기록 요청 -->
-                <button class="btn-primary">입고 확정</button>
+                <button onclick="closeModal('purchaseModal')">취소</button>
+                <button class="btn-primary" onclick="processPurchaseInput()">입고 확정 및 재고 반영</button>
             </div>
         </div>
     </div>
 
-    <script src="app.js"></script> <!-- 모달 함수 포함 -->
-    <script src="sort-table.js"></script>
+    <script src="app.js"></script> 
 </body>
 </html>

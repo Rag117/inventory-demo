@@ -2,7 +2,6 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>수주 관리 - 멍밥</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -14,15 +13,13 @@
                 <li><a href="dashboard.html">메인 대시보드</a></li>
                 <li><a href="admin.html">기준정보 관리</a></li>
                 <li><a href="purchase.html">입고 관리 (발주)</a></li>
-                <li class="active"><a href="sales.html">수주 관리 (출고)</a></li>
-                <li><a href="stock.html">재고 관리</a></li>
+                <li class="active"><a href="sales.html">수주 관리 (출고)</a></li> <li><a href="stock.html">재고 관리</a></li>
                 <li><a href="reports.html">리포트</a></li>
                 <li><a href="returns.html">반품/환불 관리</a></li>
             </ul>
         </nav>
-
         <main class="dashboard">
-            <h1>수주 관리 (출고 처리)</h1>
+            <h1>수주 관리 (Sales & Shipment)</h1>
             
             <div class="toolbar">
                 <button class="btn-primary">+ 신규 수주 등록</button>
@@ -31,128 +28,59 @@
             <div class="table-wrapper">
                 <table class="sortable-table">
                     <thead>
-                        <tr>
-                            <th class="sortable-header">수주 번호 (SO_ID)</th>
-                            <th class="sortable-header">고객사</th>
-                            <th class="sortable-header">총 수주액(원)</th>
-                            <th class="sortable-header">수주 일자</th>
-                            <th class="sortable-header">상태</th>
-                            <th>관리</th>
-                        </tr>
+                        <tr><th>수주번호</th><th>고객사</th><th>수주액</th><th>상태</th><th>관리</th></tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>SO-202511-001</td>
-                            <td>C-2001 (행복한 펫샵)</td>
-                            <td>1,800,000</td>
-                            <td>2025-11-12</td>
-                            <td><span class="status-done">출고 완료</span></td>
-                            <td><button>상세보기</button></td>
-                        </tr>
                         <tr>
                             <td>SO-202511-002</td>
                             <td>C-2002 (냥이월드)</td>
                             <td>2,500,000</td>
-                            <td>2025-11-16</td>
                             <td><span class="status-progress">출고 준비중</span></td>
                             <td><a href="#shipping-process" class="btn-primary-link">출고 처리</a></td>
-                        </tr>
-                        <tr>
-                            <td>SO-202511-003</td>
-                            <td>C-2003 (멀티펫)</td>
-                            <td>750,000</td>
-                            <td>2025-11-17</td>
-                            <td><span class="status-wait">수주 접수</span></td>
-                            <td><button>상세보기</button></td>
-                        </tr>
-                         <tr>
-                            <td>SO-202511-004</td>
-                            <td>C-2001 (행복한 펫샵)</td>
-                            <td>450,000</td>
-                            <td>2025-11-18</td>
-                            <td><span class="status-wait">수주 접수</span></td>
-                            <td><button>상세보기</button></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
             <div id="shipping-process" class="shipping-steps" style="margin-top: 30px;">
-                <h1>SO-202511-002 출고 처리 프로세스</h1>
+                <h1>SO-202511-002 출고 처리 (Demo)</h1>
 
                 <div class="step-card">
-                    <div class="step-header"><h3>1단계: 수주 품목 확인 (Sales Order Details)</h3></div>
+                    <div class="step-header"><h3>1단계: 수주 품목 확인</h3></div>
                     <div class="step-body">
                         <ul>
-                            <li>SKU-D01 (프리미엄 그레인프리 사료) - <strong>수주 수량: 20 EA</strong></li>
-                            <li>SKU-C01 (웰니스 고양이 캔) - <strong>수주 수량: 100 EA</strong></li>
+                            <li>SKU-C01 (웰니스 고양이 캔) - <strong>수주 수량: 500 EA</strong></li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="step-card">
-                    <div class="step-header"><h3>2단계: 재고 할당 (FEFO 추천)</h3></div>
+                    <div class="step-header"><h3>2단계: 재고 할당 (FEFO 자동 추천)</h3></div>
                     <div class="step-body">
-                        <p>유통기한(FEFO)이 가장 임박한 로트(Lot)가 자동 추천되었습니다.</p>
-                        <div class="table-wrapper" style="margin-top: 0;">
-                            <table class="allocation-table">
-                                <thead>
-                                    <tr>
-                                        <th>상품</th>
-                                        <th>추천 로트 (LotID)</th>
-                                        <th>현재고</th>
-                                        <th>출고수량</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>SKU-D01 (프리미엄 사료)</td>
-                                        <td>
-                                            <div class="fefo-lot">D01-A251110</div>
-                                            <div class="fefo-lot-expiry">유통기한: 2025-11-29</div>
-                                        </td>
-                                        <td>20 EA</td>
-                                        <td><input type="number" value="20" readonly></td>
-                                    </tr>
-                                    <tr>
-                                        <td rowspan="2">SKU-C01 (웰니스 캔)</td>
-                                        <td>
-                                            <div class="fefo-lot">C01-A251111</div>
-                                            <div class="fefo-lot-expiry">유통기한: 2026-01-10</div>
-                                        </td>
-                                        <td>100 EA</td>
-                                        <td><input type="number" value="100" readonly></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                        <table class="allocation-table">
+                            <thead><tr><th>상품</th><th>할당 Lot</th><th>현재고</th><th>출고수량</th></tr></thead>
+                            <tbody>
+                                <tr>
+                                    <td>SKU-C01</td>
+                                    <td>LOT-C01-A01 (유통기한 임박순)</td>
+                                    <td>5,000 EA</td>
+                                    <td><input type="number" value="500" readonly></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
                 <div class="step-card">
-                    <div class="step-header"><h3>3단계: 출고 확정 (Shipment Confirmation)</h3></div>
-                    <div class="step-body">
-                        <div class="form-group">
-                            <label for="carrier">운송사 (Carrier)</label>
-                            <input type="text" id="carrier" value="자체배송">
-                        </div>
-                        <div class="form-group">
-                            <label for="trackingNo">운송장번호 (TrackingNo)</label>
-                            <input type="text" id="trackingNo" placeholder="운송장 번호 입력...">
-                        </div>
-                         <div class="confirm-shipment">
-                            <p style="font-size: 0.9em; color: #666; margin-bottom: 10px;">
-                                * 확정 시 재고관리(Stock)에서 해당 수량이 즉시 차감되며, 재고원장(Ledger)에 기록됩니다.
-                            </p>
-                            <button class="btn-primary" onclick="confirmShipment()">출고 확정 및 송장 생성</button>
-                        </div>
+                    <div class="step-header"><h3>3단계: 출고 확정</h3></div>
+                    <div class="step-body confirm-shipment" style="text-align: right;">
+                        <p style="color:#666; margin-bottom:10px;">* 버튼 클릭 시 실제 재고 500개가 차감됩니다.</p>
+                        <button class="btn-primary" onclick="processSalesOutput()">출고 확정 및 송장 발행</button>
                     </div>
                 </div>
-
             </div>
         </main>
     </div>
-    
-    <script src="app.js"></script> <script src="sort-table.js"></script>
+    <script src="app.js"></script> 
 </body>
 </html>
