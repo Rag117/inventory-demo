@@ -14,132 +14,120 @@
                 <li><a href="dashboard.html">메인 대시보드</a></li>
                 <li><a href="admin.html">기준정보 관리</a></li>
                 <li><a href="purchase.html">입고 관리 (발주)</a></li>
-                <li><a href="sales.html">출고 관리 (주문)</a></li>
+                <li><a href="sales.html">수주 관리 (출고)</a></li>
                 <li class="active"><a href="stock.html">재고 관리</a></li>
                 <li><a href="reports.html">리포트</a></li>
                 <li><a href="returns.html">반품/환불 관리</a></li>
             </ul>
         </nav>
         <main class="dashboard">
-            <h1>Lot(로트)별 상세 재고 현황 (Tbl_StockLots)</h1>
+            <h1>통합 재고 관리</h1>
             
-            <div class="toolbar table-toolbar">
-                 <div class="filter-group">
-                    <label>검색:</label>
-                    <input type="text" placeholder="SKU 또는 LotID 검색..." style="min-width: 250px;">
-                    <button class="btn-primary">검색</button>
-                 </div>
-                 <div class="toolbar-buttons">
-                    <button onclick="openModal('moveModal')">재고 이동</button>
-                    <button onclick="openModal('adjustModal')">재고 조정</button>
-                 </div>
+            <div class="tabs">
+                <button class="tab-link active" data-tab="tab-current-stock">현재고 현황 (Current)</button>
+                <button class="tab-link" data-tab="tab-stock-ledger">재고 수불부 (Ledger)</button>
             </div>
 
-            <!-- Tbl_StockLots (CurrentQty > 0) 목록 -->
-            <div class="table-wrapper">
-                <table class="sortable-table">
-                    <thead>
-                        <tr>
-                            <th class="sortable-header">SKU (FK)</th>
-                            <th class="sortable-header">상품명</th>
-                            <th class="sortable-header">Lot 번호 (PK)</th>
-                            <th class="sortable-header">로케이션 (FK)</th>
-                            <th class="sortable-header">현재고 (Qty)</th>
-                            <th class="sortable-header">유통기한</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>SKU-D01</td>
-                            <td>프리미엄 그레인프리 사료 (10kg)</td>
-                            <td>D01-A251110</td>
-                            <td>A-01-01</td>
-                            <td>20</td>
-                            <td>2025-11-29</td>
-                        </tr>
-                        <tr>
-                            <td>SKU-D01</td>
-                            <td>프리미엄 그레인프리 사료 (10kg)</td>
-                            <td>D01-B251115</td>
-                            <td>A-01-02</td>
-                            <td>40</td>
-                            <td>2026-02-15</td>
-                        </tr>
-                        <tr>
-                            <td>SKU-C01</td>
-                            <td>웰니스 고양이 캔 (참치) (85g)</td>
-                            <td>C01-A251111</td>
-                            <td>C-01-01</td>
-                            <td>100</td>
-                            <td>2026-01-10</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div id="tab-current-stock" class="tab-content active">
+                <div class="toolbar table-toolbar">
+                     <div class="filter-group">
+                        <label>통합 검색:</label>
+                        <input type="text" id="stock-search-input" placeholder="SKU코드 또는 상품명 입력..." style="min-width: 300px;">
+                        <button class="btn-primary" onclick="filterStockTable()">검색</button>
+                     </div>
+                     <div class="toolbar-buttons">
+                        <button onclick="openModal('moveModal')">재고 이동</button>
+                        <button onclick="openModal('adjustModal')">재고 조정</button>
+                     </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="sortable-table" id="current-stock-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable-header">SKU</th>
+                                <th class="sortable-header">상품명</th>
+                                <th class="sortable-header">Lot 번호</th>
+                                <th class="sortable-header">창고/로케이션</th>
+                                <th class="sortable-header">현재고 (Qty)</th>
+                                <th class="sortable-header">유통기한</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="stock-row">
+                                <td>SKU-D01</td>
+                                <td>프리미엄 그레인프리 사료</td>
+                                <td>D01-A251110</td>
+                                <td>WH01-A-01</td> <td>20</td>
+                                <td>2025-11-29</td>
+                            </tr>
+                            <tr class="stock-row">
+                                <td>SKU-C01</td>
+                                <td>웰니스 고양이 캔</td>
+                                <td>C01-A251111</td>
+                                <td>WH01-C-01</td>
+                                <td>100</td>
+                                <td>2026-01-10</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
+            <div id="tab-stock-ledger" class="tab-content">
+                <div class="toolbar table-toolbar">
+                    <div class="filter-group">
+                        <label>기준 일자:</label>
+                        <input type="date" id="ledger-date" value="2025-12-02">
+                        <span style="font-size: 0.8em; color: #666;">* 해당 날짜까지의 재고 흐름을 계산합니다.</span>
+                    </div>
+                    <button class="btn-primary">조회</button>
+                </div>
+                
+                <div class="table-wrapper">
+                    <table class="sortable-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable-header">일자</th>
+                                <th class="sortable-header">구분</th>
+                                <th class="sortable-header">SKU</th>
+                                <th class="sortable-header">상품명</th>
+                                <th class="sortable-header">입고</th>
+                                <th class="sortable-header">출고</th>
+                                <th class="sortable-header">재고 잔량</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>2025-12-01</td>
+                                <td><span class="status-done">입고(PO)</span></td>
+                                <td>SKU-D01</td>
+                                <td>프리미엄 그레인프리 사료</td>
+                                <td>+50</td>
+                                <td>0</td>
+                                <td>70</td>
+                            </tr>
+                             <tr>
+                                <td>2025-12-02</td>
+                                <td><span class="status-danger">출고(SO)</span></td>
+                                <td>SKU-D01</td>
+                                <td>프리미엄 그레인프리 사료</td>
+                                <td>0</td>
+                                <td>-10</td>
+                                <td>60</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </main>
     </div>
 
-    <!-- '재고 조정' 모달 (Tbl_StockAdjustments -> Tbl_StockLots/Tbl_StockTransactions) -->
-    <div id="adjustModal" class="modal">
-         <div class="modal-content modal-sm">
-            <div class="modal-header">
-                <h2>재고 조정 (Tbl_StockAdjustments)</h2>
-                <span class="close" onclick="closeModal('adjustModal')">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>조정 대상 LotID:</label>
-                    <input type="text" value="D01-A251110">
-                </div>
-                <div class="form-group">
-                    <label>조정 수량 (+/-):</label>
-                    <input type="number" value="-1">
-                </div>
-                <div class="form-group">
-                    <label>사유 (Reason):</label>
-                    <input type="text" placeholder="예: 파손, 실사차이">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button onclick="closeModal('adjustModal')">취소</button>
-                <button class="btn-primary">조정 확정</button>
-            </div>
-         </div>
-    </div>
-    
-    <!-- '재고 이동' 모달 (Tbl_StockTransactions TxType: MOVE) -->
-    <div id="moveModal" class="modal">
-         <div class="modal-content modal-sm">
-             <div class="modal-header">
-                <h2>재고 이동</h2>
-                <span class="close" onclick="closeModal('moveModal')">&times;</span>
-            </div>
-             <div class="modal-body">
-                 <div class="form-group">
-                    <label>이동할 LotID:</label>
-                    <input type="text" value="D01-B251115">
-                 </div>
-                 <div class="form-group">
-                    <label>From 로케이션:</label>
-                    <input type="text" value="A-01-02" readonly>
-                 </div>
-                 <div class="form-group">
-                    <label>To 로케이션:</label>
-                    <input type="text" placeholder="예: A-01-03">
-                 </div>
-                 <div class="form-group">
-                    <label>이동 수량:</label>
-                    <input type="number" value="10">
-                 </div>
-             </div>
-             <div class="modal-footer">
-                <button onclick="closeModal('moveModal')">취소</button>
-                <button class="btn-primary">이동 확정</button>
-            </div>
-         </div>
-    </div>
-    
-    <script src="app.js"></script> <!-- 모달 함수 포함 -->
+    <script src="app.js"></script> 
     <script src="sort-table.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', initializeTabs);
+    </script>
 </body>
 </html>

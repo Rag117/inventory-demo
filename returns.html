@@ -1,157 +1,50 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>반품/환불 관리 - 멍밥</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="container">
-        <nav class="sidebar">
-            <h2>멍밥 재고 관리 시스템</h2>
-            <ul>
-                <li><a href="dashboard.html">메인 대시보드</a></li>
-                <li><a href="admin.html">기준정보 관리</a></li>
-                <li><a href="purchase.html">입고 관리 (발주)</a></li>
-                <li><a href="sales.html">출고 관리 (주문)</a></li>
-                <li><a href="stock.html">재고 관리</a></li>
-                <li><a href="reports.html">리포트</a></li>
-                <!-- 활성화된 현재 메뉴 -->
-                <li class="active"><a href="returns.html">반품/환불 관리</a></li>
-            </ul>
-        </nav>
-        
-        <main class="dashboard">
-            <h1>반품/환불 관리 (Tbl_Returns)</h1>
-            
-            <div class="toolbar table-toolbar">
-                 <div class="filter-group">
-                    <label>검색:</label>
-                    <input type="text" placeholder="원본 주문번호(SO_ID) 또는 SKU 검색..." style="min-width: 250px;">
-                    <button class="btn-primary">검색</button>
-                 </div>
-                 <div class="toolbar-buttons">
-                    <button class="btn-primary" onclick="openModal('returnModal')">+ 신규 반품 접수</button>
-                 </div>
-            </div>
-
-            <!-- Tbl_Returns 목록 -->
-            <div class="table-wrapper">
-                <table class="sortable-table">
-                    <thead>
-                        <tr>
-                            <th class="sortable-header">반품ID (ReturnID)</th>
-                            <th class="sortable-header">반품접수일</th>
-                            <th class="sortable-header">원본 주문(SO_ID)</th>
-                            <th class="sortable-header">SKU</th>
-                            <th class="sortable-header">반품수량</th>
-                            <th class="sortable-header">사유 (Reason)</th>
-                            <th class="sortable-header">처리 상태 (ActionTaken)</th>
-                            <th>관리</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- (서버에서 Tbl_Returns를 조회한 데이터 예시) -->
-                        <tr>
-                            <td>RT-001</td>
-                            <td>2025-11-18</td>
-                            <td>SO-202511-001</td>
-                            <td>SKU-D01</td>
-                            <td>1</td>
-                            <td>고객 단순 변심</td>
-                            <td><span class="status-wait">접수 (처리 대기)</span></td>
-                            <td><button class="btn-primary" onclick="openModal('actionModal')">반품 처리</button></td>
-                        </tr>
-                        <tr>
-                            <td>RT-002</td>
-                            <td>2025-11-17</td>
-                            <td>SO-202511-001</td>
-                            <td>SKU-C01</td>
-                            <td>5</td>
-                            <td>상품 파손</td>
-                            <td><span class="status-danger">폐기 완료 (DISPOSE)</span></td>
-                            <td><button>상세보기</button></td>
-                        </tr>
-                         <tr>
-                            <td>RT-003</td>
-                            <td>2025-11-17</td>
-                            <td>SO-202510-050</td>
-                            <td>SKU-T01</td>
-                            <td>2</td>
-                            <td>고객 단순 변심</td>
-                            <td><span class="status-done">재입고 완료 (RE_STOCK)</span></td>
-                            <td><button>상세보기</button></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </main>
-    </div>
-
-    <!-- '반품 처리' 모달 (Tbl_Returns.ActionTaken 필드 처리) -->
-    <div id="actionModal" class="modal">
-        <div class="modal-content modal-sm">
-            <div class="modal-header">
-                <h2>반품 처리 (RT-001)</h2>
+<div id="actionModal" class="modal">
+        <div class="modal-content"> <div class="modal-header">
+                <h2>반품 상세 정보 및 처리 (RT-001)</h2>
                 <span class="close" onclick="closeModal('actionModal')">&times;</span>
             </div>
             <div class="modal-body">
-                <p>
-                    <strong>상품:</strong> SKU-D01 (프리미엄 사료)<br>
-                    <strong>수량:</strong> 1 EA<br>
-                    <strong>사유:</strong> 고객 단순 변심
-                </p>
-                <p>반품된 상품의 후속 조치를 선택하세요.</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="info-section">
+                        <h3>1. 원본 거래 정보</h3>
+                        <div class="form-group">
+                            <label>실제 거래일 (Transaction Date):</label>
+                            <input type="text" value="2025-11-12" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>반품처 (From):</label>
+                            <input type="text" value="C-2001 (행복한 펫샵)" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>상품 카테고리:</label>
+                            <input type="text" value="사료 (기타)" readonly>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h3>2. 반품 처리 내용</h3>
+                        <div class="form-group">
+                            <label>반품 접수일:</label>
+                            <input type="date" value="2025-11-18">
+                        </div>
+                        <div class="form-group">
+                            <label>처리 예정일 (폐기/입고):</label>
+                            <input type="date" value="2025-11-19">
+                        </div>
+                        <div class="form-group">
+                            <label>처리 방법:</label>
+                            <select>
+                                <option value="DISPOSE">폐기 (Disposal)</option>
+                                <option value="RESTOCK">재입고 (Restock)</option>
+                                <option value="OTHER">기타 (Check)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
-                <!-- 
-                  [폐기] 서버 요청: Tbl_Returns.ActionTaken = 'DISPOSE'
-                -->
-                <button class="btn-danger" onclick="closeModal('actionModal')">폐기 처리 (DISPOSE)</button>
-                
-                <!-- 
-                  [재입고] 서버 요청: Tbl_Returns.ActionTaken = 'RE_STOCK'
-                  (서버는 Tbl_StockLots/Tbl_StockTransactions도 함께 처리)
-                -->
-                <button class="btn-primary" onclick="closeModal('actionModal')">[정상] 재입고 처리 (RE_STOCK)</button>
+                <button class="btn-danger">폐기 확정</button>
+                <button class="btn-primary">재입고 확정</button>
             </div>
         </div>
     </div>
-    
-    <!-- '신규 반품 접수' 모달 (Tbl_Returns CREATE) -->
-    <div id="returnModal" class="modal">
-         <div class="modal-content modal-sm">
-             <div class="modal-header">
-                <h2>신규 반품 접수</h2>
-                <span class="close" onclick="closeModal('returnModal')">&times;</span>
-            </div>
-             <div class="modal-body">
-                 <div class="form-group">
-                    <label>원본 주문서 (Original_SO_ID):</label>
-                    <input type="text" placeholder="SO-...">
-                 </div>
-                 <div class="form-group">
-                    <label>반품 SKU:</label>
-                    <input type="text" placeholder="SKU...">
-                 </div>
-                 <div class="form-group">
-                    <label>반품 수량:</label>
-                    <input type="number" value="1">
-                 </div>
-                 <div class="form-group">
-                    <label>반품 사유 (Reason):</label>
-                    <input type="text">
-                 </div>
-             </div>
-             <div class="modal-footer">
-                <button onclick="closeModal('returnModal')">취소</button>
-                <button class="btn-primary">반품 접수</button>
-            </div>
-         </div>
-    </div>
-
-    <script src="app.js"></script> <!-- 모달 함수 포함 -->
-    <script src="sort-table.js"></script>
-</body>
-</html>
