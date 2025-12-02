@@ -288,3 +288,31 @@ function testOpenReturnModal() {
     };
     openReturnActionModal(mockData);
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. 공통 탭 기능 초기화
+    initializeTabs();
+
+    // 2. [추가됨] 기준정보 데이터가 없으면 localStorage에 생성
+    if (typeof initMasterData === 'function') {
+        initMasterData(); 
+    }
+    
+    // 3. [추가됨] 탭 클릭 시 데이터를 다시 그리도록 이벤트 연결
+    const tabs = document.querySelectorAll('.tab-link');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabId = tab.getAttribute('data-tab');
+            // 각 탭에 맞는 렌더링 함수 호출
+            if(tabId === 'tab-products' && typeof renderProducts === 'function') renderProducts();
+            if(tabId === 'tab-warehouses' && typeof renderWarehouses === 'function') renderWarehouses();
+            if(tabId === 'tab-locations' && typeof renderLocations === 'function') renderLocations();
+            if(tabId === 'tab-partners' && typeof renderPartners === 'function') renderPartners();
+        });
+    });
+
+    // 4. [추가됨] 첫 화면(상품 탭) 데이터 그리기
+    if (typeof renderProducts === 'function') {
+        renderProducts();
+    }
+});
