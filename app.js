@@ -299,19 +299,25 @@ function renderReturnsPage() {
     const list = JSON.parse(localStorage.getItem(DB_RETURNS)) || [];
     const tbody = document.querySelector('#return-table tbody');
     
+    // 테이블이 없으면 실행 중단 (오류 방지)
+    if (!tbody) return;
+
     tbody.innerHTML = list.map(r => {
         const p = getProductInfo(r.sku);
+        // 상태에 따른 뱃지 표시
+        let statusBadge = '';
+        if (r.status === 'Requested') statusBadge = '<span class="status-wait">승인대기</span>';
+        else if (r.status === 'Restocked') statusBadge = '<span class="status-done">재입고완료</span>';
+        else statusBadge = '<span class="status-danger">폐기완료</span>';
+
         return `
         <tr>
             <td>${r.id}</td>
-            <td>${r.returnDate}</td> <td>${p.name}</td>
+            <td>${r.returnDate}</td>
+            <td>${p.name}</td>
             <td>${r.qty}</td>
-            <td>${r.reason}</td>
-            <td>
-                ${r.status === 'Requested' ? '<span class="status-wait">승인대기</span>' : 
-                  r.status === 'Disposed' ? '<span class="status-danger">폐기완료</span>' : 
-                  '<span class="status-done">재입고완료</span>'}
-            </td>
+            <td>${r.customer || '-'}</td>
+            <td>${statusBadge}</td>
             <td>
                 ${r.status === 'Requested' 
                     ? `<button class="btn-primary" onclick="openReturnProcessModal('${r.id}')">처리</button>` 
@@ -323,59 +329,76 @@ function renderReturnsPage() {
     populateProductOptions('ret-sku-select');
 }
 function registerReturn() {
+    // HTML ID와 정확히 일치해야 함
     const skuSel = document.getElementById('ret-sku-select');
     const qty = document.getElementById('ret-qty').value;
+    const orgDate = document.getElementById('ret-org-date').value;
+    const customer = document.getElementById('ret-customer').value;
     const reason = document.getElementById('ret-reason').value;
-    const customer = document.getElementById('ret-customer').value; // 고객사 추가
-    const orgDate = document.getElementById('ret-org-date').value;  // 실제 거래일 추가
-    
-    if(!skuSel.value || !qty || !orgDate) return alert('필수 정보 누락');
+
+    if (!skuSel.value || !qty || !orgDate) {
+        return alert('상품, 수량, 원래 구매일은 필수입니다.');
+    }
 
     const list = JSON.parse(localStorage.getItem(DB_RETURNS)) || [];
-    list.push({
+    
+    const newReturn = {
         id: 'RT-' + Date.now(),
-        returnDate: new Date().toISOString().split('T')[0], // 반품 접수일(오늘)
-        orgDate: orgDate,       // 실제 거래일
-        customer: customer,     // 반품처(고객)
+        returnDate: new Date().toISOString().split('T')[0], // 오늘 접수
+        orgDate: orgDate,       // 원래 구매일
+        customer: customer,     // 고객사
         sku: skuSel.value,
         qty: parseInt(qty),
         reason: reason,
-        status: 'Requested',
-        processDate: null,      // 처리일(폐기/재입고일)
-        actionType: null        // 처리유형
-    });
+        status: 'Requested',    // 초기 상태
+        processDate: '',        // 아직 처리 안됨
+        actionType: ''          // 아직 결정 안됨
+    };
+
+    list.push(newReturn);
     localStorage.setItem(DB_RETURNS, JSON.stringify(list));
-    alert('반품 접수 완료'); closeModal('returnRegModal'); renderReturnsPage();
+    
+    alert('반품 접수가 등록되었습니다.');
+    closeModal('returnRegModal');
+    renderReturnsPage();
 }
+
 function completeReturnProcess() {
     const id = document.getElementById('proc-ret-id').value;
     const action = document.getElementById('proc-action').value;
-    const procDate = document.getElementById('proc-date').value; // 처리 날짜 입력
+    const procDate = document.getElementById('proc-date').value;
 
-    if(!procDate) return alert('처리 날짜를 입력하세요.');
+    if (!procDate) return alert('처리 날짜를 입력해주세요.');
 
     let list = JSON.parse(localStorage.getItem(DB_RETURNS)) || [];
     let item = list.find(r => r.id === id);
     
-    item.processDate = procDate; // 처리일 저장
+    if (!item) return;
+
+    item.processDate = procDate;
     item.actionType = action;
 
     if (action === 'RESTOCK') {
+        // 재입고: 재고 증가 로직 호출
         updateStock('IN', { 
-            sku: item.sku, qty: item.qty, 
-            lotId: 'LOT-RET-'+item.id, location: 'WH02-R-01', 
-            refType: '반품재입고', refId: item.id,
-            date: procDate // 재고 반영일
+            sku: item.sku, 
+            qty: item.qty, 
+            lotId: 'LOT-RET-' + item.id, 
+            location: 'WH02-R-01', // 반품 전용 구역
+            refType: '반품재입고', 
+            refId: item.id,
+            date: procDate 
         });
-        item.status = 'Restocked'; 
-        alert('재입고 처리 완료');
+        item.status = 'Restocked';
+        alert('반품 창고(WH02)로 재입고 되었습니다.');
     } else {
-        item.status = 'Disposed'; 
-        alert(`폐기 처리 완료 (폐기일: ${procDate})`);
+        // 폐기: 재고 반영 안 함 (상태만 변경)
+        item.status = 'Disposed';
+        alert('폐기 처리되었습니다. (재고 변동 없음)');
     }
 
-    localStorage.setItem(DB_RETURNS, JSON.stringify(list)); 
-    closeModal('returnProcessModal'); 
+    localStorage.setItem(DB_RETURNS, JSON.stringify(list));
+    closeModal('returnProcessModal');
     renderReturnsPage();
 }
 
@@ -384,18 +407,22 @@ function openReturnDetailModal(id) {
     const item = list.find(r => r.id === id);
     const p = getProductInfo(item.sku);
 
+    // 상세 내용 HTML 생성
     const detailHtml = `
-        <p><strong>반품 ID:</strong> ${item.id}</p>
-        <p><strong>상품명:</strong> ${p.name} (${p.category})</p>
-        <p><strong>반품처(고객):</strong> ${item.customer || '-'}</p>
+        <p><strong>반품 번호:</strong> ${item.id}</p>
+        <p><strong>진행 상태:</strong> ${item.status}</p>
         <hr>
-        <p><strong>실제 거래일:</strong> ${item.orgDate}</p>
+        <p><strong>상품명:</strong> ${p.name}</p>
+        <p><strong>반품 수량:</strong> ${item.qty}개</p>
+        <p><strong>반품처(고객):</strong> ${item.customer || '(미입력)'}</p>
+        <p><strong>반품 사유:</strong> ${item.reason || '-'}</p>
+        <hr>
+        <p><strong>원래 구매일:</strong> ${item.orgDate}</p>
         <p><strong>반품 접수일:</strong> ${item.returnDate}</p>
-        <p><strong>처리 완료일:</strong> ${item.processDate || '-'}</p>
-        <hr>
-        <p><strong>처리 결과:</strong> ${item.status} (${item.actionType === 'DISPOSE' ? '폐기' : '재입고'})</p>
-        <p><strong>사유:</strong> ${item.reason}</p>
+        <p><strong>처리 완료일:</strong> ${item.processDate || '(처리중)'}</p>
+        <p><strong>처리 방식:</strong> ${item.actionType === 'RESTOCK' ? '재입고' : (item.actionType === 'DISPOSE' ? '폐기' : '-')}</p>
     `;
+    
     document.getElementById('detail-content').innerHTML = detailHtml;
     openModal('returnDetailModal');
 }
@@ -406,4 +433,9 @@ function populateLocationOptions(id) { const el=document.getElementById(id); if(
 function initializeTabs() { document.querySelectorAll('.tab-link').forEach(btn=>{btn.addEventListener('click',(e)=>{const t=e.target.dataset.tab; document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); document.querySelectorAll('.tab-link').forEach(b=>b.classList.remove('active')); document.getElementById(t).classList.add('active'); e.target.classList.add('active');});}); }
 function openModal(id) { if(id==='purchaseModal'){populateProductOptions('po-sku-select');populateLocationOptions('po-location');} if(id==='salesRegModal')populateProductOptions('so-sku-select'); if(id==='returnRegModal')populateProductOptions('ret-sku-select'); document.getElementById(id).style.display='block'; }
 function closeModal(id) { document.getElementById(id).style.display='none'; }
-function openReturnProcessModal(id) { document.getElementById('proc-ret-id').value=id; openModal('returnProcessModal'); }
+function openReturnProcessModal(id) {
+    document.getElementById('proc-ret-id').value = id;
+    // 처리 날짜 기본값 오늘로 세팅
+    document.getElementById('proc-date').value = new Date().toISOString().split('T')[0];
+    openModal('returnProcessModal');
+}

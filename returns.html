@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>반품 관리 - 멍밥</title>
+    <title>반품 관리 - 멍밥 ERP</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -19,13 +19,26 @@
                 <li class="active"><a href="returns.html">반품 관리</a></li>
             </ul>
         </nav>
-        
         <main class="dashboard">
             <h1>반품/환불 관리</h1>
-            <div class="toolbar"><button class="btn-primary" onclick="openModal('returnRegModal')">+ 반품 접수</button></div>
+            
+            <div class="toolbar">
+                <button class="btn-primary" onclick="openModal('returnRegModal')">+ 반품 접수 등록</button>
+            </div>
+
             <div class="table-wrapper">
                 <table class="sortable-table" id="return-table">
-                    <thead><tr><th>ID</th><th>날짜</th><th>상품</th><th>수량</th><th>사유</th><th>상태</th><th>관리</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>반품ID</th>
+                            <th>접수일</th>
+                            <th>상품명</th>
+                            <th>수량</th>
+                            <th>반품처(고객)</th>
+                            <th>상태</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
                     <tbody></tbody>
                 </table>
             </div>
@@ -33,36 +46,88 @@
     </div>
 
     <div id="returnRegModal" class="modal">
-        <div class="modal-content modal-sm">
-            <div class="modal-header"><h2>반품 접수</h2><span class="close" onclick="closeModal('returnRegModal')">&times;</span></div>
-            <div class="modal-body">
-                <div class="form-group"><label>반품 상품</label><select id="ret-sku-select"></select></div>
-                <div class="form-group"><label>수량</label><input type="number" id="ret-qty"></div>
-                <div class="form-group"><label>사유</label><input type="text" id="ret-reason" placeholder="예: 파손"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>반품 접수 등록</h2>
+                <span class="close" onclick="closeModal('returnRegModal')">&times;</span>
             </div>
-            <div class="modal-footer"><button class="btn-primary" onclick="registerReturn()">접수</button></div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>반품 상품 선택</label>
+                    <select id="ret-sku-select"></select>
+                </div>
+                <div class="form-group">
+                    <label>반품 수량</label>
+                    <input type="number" id="ret-qty" value="1">
+                </div>
+                <div class="form-group">
+                    <label>원래 구매일 (Original Date)</label>
+                    <input type="date" id="ret-org-date">
+                </div>
+                <div class="form-group">
+                    <label>반품처 (고객명/사이트)</label>
+                    <input type="text" id="ret-customer" placeholder="예: 냥이월드">
+                </div>
+                <div class="form-group">
+                    <label>반품 사유</label>
+                    <input type="text" id="ret-reason" placeholder="예: 배송 중 파손, 단순 변심">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" onclick="registerReturn()">접수 등록</button>
+            </div>
         </div>
     </div>
 
     <div id="returnProcessModal" class="modal">
-        <div class="modal-content modal-sm">
-            <div class="modal-header"><h2>반품 처리 (승인)</h2><span class="close" onclick="closeModal('returnProcessModal')">&times;</span></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>반품 처리 (승인)</h2>
+                <span class="close" onclick="closeModal('returnProcessModal')">&times;</span>
+            </div>
             <div class="modal-body">
                 <input type="hidden" id="proc-ret-id">
                 <div class="form-group">
+                    <label>처리 실행일</label>
+                    <input type="date" id="proc-date">
+                </div>
+                <div class="form-group">
                     <label>처리 방식</label>
                     <select id="proc-action">
-                        <option value="RESTOCK">재입고 (재고 증가)</option>
-                        <option value="DISPOSE">폐기 (재고 미반영)</option>
+                        <option value="RESTOCK">재입고 (반품 창고로 입고)</option>
+                        <option value="DISPOSE">폐기 (재고 반영 안함)</option>
                     </select>
                 </div>
-                <p style="color:gray; font-size:0.9em;">* 재입고 선택 시 반품 전용 창고(WH02)로 입고됩니다.</p>
             </div>
-            <div class="modal-footer"><button class="btn-primary" onclick="completeReturnProcess()">확정</button></div>
+            <div class="modal-footer">
+                <button class="btn-primary" onclick="completeReturnProcess()">확정</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="returnDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>반품 상세 정보</h2>
+                <span class="close" onclick="closeModal('returnDetailModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="detail-content" style="font-size: 0.95em; line-height: 1.8;">
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal('returnDetailModal')">닫기</button>
+            </div>
         </div>
     </div>
 
     <script src="sort-table.js"></script>
     <script src="app.js"></script>
+    <script>
+        // 오늘 날짜 자동 세팅
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('ret-org-date').value = today;
+        document.getElementById('proc-date').value = today;
+    </script>
 </body>
 </html>
