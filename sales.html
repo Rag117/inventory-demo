@@ -8,79 +8,69 @@
 <body>
     <div class="container">
         <nav class="sidebar">
-            <h2>멍밥 재고 관리 시스템</h2>
+            <h2>멍밥 ERP</h2>
             <ul>
                 <li><a href="dashboard.html">메인 대시보드</a></li>
                 <li><a href="admin.html">기준정보 관리</a></li>
-                <li><a href="purchase.html">입고 관리 (발주)</a></li>
-                <li class="active"><a href="sales.html">수주 관리 (출고)</a></li> <li><a href="stock.html">재고 관리</a></li>
+                <li><a href="purchase.html">입고 관리</a></li>
+                <li class="active"><a href="sales.html">수주 관리</a></li>
+                <li><a href="stock.html">재고 관리</a></li>
                 <li><a href="reports.html">리포트</a></li>
-                <li><a href="returns.html">반품/환불 관리</a></li>
+                <li><a href="returns.html">반품 관리</a></li>
             </ul>
         </nav>
+        
         <main class="dashboard">
-            <h1>수주 관리 (Sales & Shipment)</h1>
+            <h1>수주 관리 (Sales Order)</h1>
             
             <div class="toolbar">
-                <button class="btn-primary">+ 신규 수주 등록</button>
+                <button class="btn-primary" onclick="openModal('salesRegModal')">+ 신규 주문 등록</button>
             </div>
 
             <div class="table-wrapper">
-                <table class="sortable-table">
+                <table class="sortable-table" id="sales-table">
                     <thead>
-                        <tr><th>수주번호</th><th>고객사</th><th>수주액</th><th>상태</th><th>관리</th></tr>
+                        <tr><th>주문번호</th><th>고객사</th><th>상품명</th><th>수량</th><th>상태/관리</th></tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>SO-202511-002</td>
-                            <td>C-2002 (냥이월드)</td>
-                            <td>2,500,000</td>
-                            <td><span class="status-progress">출고 준비중</span></td>
-                            <td><a href="#shipping-process" class="btn-primary-link">출고 처리</a></td>
-                        </tr>
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
+            
+            </main>
+    </div>
 
-            <div id="shipping-process" class="shipping-steps" style="margin-top: 30px;">
-                <h1>SO-202511-002 출고 처리 (Demo)</h1>
+    <div id="salesRegModal" class="modal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header"><h2>신규 주문 등록</h2><span class="close" onclick="closeModal('salesRegModal')">&times;</span></div>
+            <div class="modal-body">
+                <div class="form-group"><label>고객사</label><input type="text" id="so-customer" placeholder="예: 냥이월드"></div>
+                <div class="form-group"><label>상품</label><select id="so-sku-select"></select></div>
+                <div class="form-group"><label>수량</label><input type="number" id="so-qty"></div>
+            </div>
+            <div class="modal-footer"><button class="btn-primary" onclick="registerSales()">등록</button></div>
+        </div>
+    </div>
 
-                <div class="step-card">
-                    <div class="step-header"><h3>1단계: 수주 품목 확인</h3></div>
-                    <div class="step-body">
-                        <ul>
-                            <li>SKU-C01 (웰니스 고양이 캔) - <strong>수주 수량: 500 EA</strong></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="step-card">
-                    <div class="step-header"><h3>2단계: 재고 할당 (FEFO 자동 추천)</h3></div>
-                    <div class="step-body">
-                        <table class="allocation-table">
-                            <thead><tr><th>상품</th><th>할당 Lot</th><th>현재고</th><th>출고수량</th></tr></thead>
-                            <tbody>
-                                <tr>
-                                    <td>SKU-C01</td>
-                                    <td>LOT-C01-A01 (유통기한 임박순)</td>
-                                    <td>5,000 EA</td>
-                                    <td><input type="number" value="500" readonly></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="step-card">
-                    <div class="step-header"><h3>3단계: 출고 확정</h3></div>
-                    <div class="step-body confirm-shipment" style="text-align: right;">
-                        <p style="color:#666; margin-bottom:10px;">* 버튼 클릭 시 실제 재고 500개가 차감됩니다.</p>
-                        <button class="btn-primary" onclick="processSalesOutput()">출고 확정 및 송장 발행</button>
-                    </div>
+    <div id="shipmentModal" class="modal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header"><h2>출고 처리 (재고 차감)</h2><span class="close" onclick="closeModal('shipmentModal')">&times;</span></div>
+            <div class="modal-body">
+                <input type="hidden" id="ship-so-id">
+                <input type="hidden" id="ship-sku-hidden">
+                <input type="hidden" id="ship-name-hidden">
+                
+                <div class="form-group"><label>출고 요청 수량</label><input type="text" id="ship-req-qty" readonly class="input-readonly"></div>
+                <div class="form-group">
+                    <label>출고할 재고 Lot 선택 (FEFO)</label>
+                    <select id="ship-lot-select" style="width:100%; padding:10px;"></select>
                 </div>
             </div>
-        </main>
+            <div class="modal-footer"><button class="btn-primary" onclick="confirmShipment()">출고 확정</button></div>
+        </div>
     </div>
-    <script src="app.js"></script> 
+
+    <script src="sort-table.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>

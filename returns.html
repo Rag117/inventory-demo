@@ -1,77 +1,68 @@
-<div id="actionModal" class="modal">
-    <div class="modal-content modal-lg">
-        <div class="modal-header">
-            <h2>반품 상세 정보 및 처리 (RT-001)</h2>
-            <span class="close" onclick="closeModal('actionModal')">&times;</span>
-        </div>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>반품 관리 - 멍밥</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="sidebar">
+            <h2>멍밥 ERP</h2>
+            <ul>
+                <li><a href="dashboard.html">메인 대시보드</a></li>
+                <li><a href="admin.html">기준정보 관리</a></li>
+                <li><a href="purchase.html">입고 관리</a></li>
+                <li><a href="sales.html">수주 관리</a></li>
+                <li><a href="stock.html">재고 관리</a></li>
+                <li><a href="reports.html">리포트</a></li>
+                <li class="active"><a href="returns.html">반품 관리</a></li>
+            </ul>
+        </nav>
         
-        <div class="modal-body">
-            <div class="modal-grid"> <div class="info-section">
-                    <h3>1. 원본 거래 정보 (Original Transaction)</h3>
-                    <div class="form-group">
-                        <label>실제 거래일 (Original Date)</label>
-                        <input type="date" value="2025-11-12" readonly class="input-readonly">
-                    </div>
-                    <div class="form-group">
-                        <label>반품처 / 고객사 (From)</label>
-                        <input type="text" value="C-2001 (행복한 펫샵)" readonly class="input-readonly">
-                    </div>
-                    <div class="form-group">
-                        <label>관련 주문번호 (Ref SO)</label>
-                        <input type="text" value="SO-202511-001" readonly class="input-readonly">
-                    </div>
-                    <div class="form-group">
-                        <label>상품 / 카테고리</label>
-                        <input type="text" value="프리미엄 사료 (사료)" readonly class="input-readonly">
-                    </div>
-                </div>
-
-                <div class="info-section">
-                    <h3>2. 반품 처리 내용 (Action)</h3>
-                    <div class="form-group">
-                        <label>반품 접수일 (Return Date)</label>
-                        <input type="date" value="2025-11-18">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>처리 방법 (Action Type)</label>
-                        <select id="return-action-type" onchange="toggleDisposalDate()">
-                            <option value="DISPOSE">폐기 (Disposal)</option>
-                            <option value="RESTOCK">재입고 (Restock)</option>
-                            <option value="OTHER">기타 (Other)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label id="action-date-label">폐기 실행일 (Disposal Date)</label>
-                        <input type="date" id="action-date-input" value="2025-11-19">
-                    </div>
-
-                    <div class="form-group">
-                        <label>처리 사유 / 메모</label>
-                        <input type="text" placeholder="예: 포장 훼손으로 인한 전량 폐기">
-                    </div>
-                </div>
+        <main class="dashboard">
+            <h1>반품/환불 관리</h1>
+            <div class="toolbar"><button class="btn-primary" onclick="openModal('returnRegModal')">+ 반품 접수</button></div>
+            <div class="table-wrapper">
+                <table class="sortable-table" id="return-table">
+                    <thead><tr><th>ID</th><th>날짜</th><th>상품</th><th>수량</th><th>사유</th><th>상태</th><th>관리</th></tr></thead>
+                    <tbody></tbody>
+                </table>
             </div>
-        </div>
+        </main>
+    </div>
 
-        <div class="modal-footer">
-            <button class="btn-danger" onclick="alert('폐기 처리가 완료되었습니다.')">폐기 확정</button>
-            <button class="btn-primary" onclick="alert('재입고 처리가 완료되었습니다.')">재입고 확정</button>
+    <div id="returnRegModal" class="modal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header"><h2>반품 접수</h2><span class="close" onclick="closeModal('returnRegModal')">&times;</span></div>
+            <div class="modal-body">
+                <div class="form-group"><label>반품 상품</label><select id="ret-sku-select"></select></div>
+                <div class="form-group"><label>수량</label><input type="number" id="ret-qty"></div>
+                <div class="form-group"><label>사유</label><input type="text" id="ret-reason" placeholder="예: 파손"></div>
+            </div>
+            <div class="modal-footer"><button class="btn-primary" onclick="registerReturn()">접수</button></div>
         </div>
     </div>
-</div>
 
-<script>
-function toggleDisposalDate() {
-    const type = document.getElementById('return-action-type').value;
-    const label = document.getElementById('action-date-label');
-    if (type === 'RESTOCK') {
-        label.innerText = '재입고 예정일 (Restock Date)';
-    } else if (type === 'DISPOSE') {
-        label.innerText = '폐기 실행일 (Disposal Date)';
-    } else {
-        label.innerText = '처리 일자 (Date)';
-    }
-}
-</script>
+    <div id="returnProcessModal" class="modal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header"><h2>반품 처리 (승인)</h2><span class="close" onclick="closeModal('returnProcessModal')">&times;</span></div>
+            <div class="modal-body">
+                <input type="hidden" id="proc-ret-id">
+                <div class="form-group">
+                    <label>처리 방식</label>
+                    <select id="proc-action">
+                        <option value="RESTOCK">재입고 (재고 증가)</option>
+                        <option value="DISPOSE">폐기 (재고 미반영)</option>
+                    </select>
+                </div>
+                <p style="color:gray; font-size:0.9em;">* 재입고 선택 시 반품 전용 창고(WH02)로 입고됩니다.</p>
+            </div>
+            <div class="modal-footer"><button class="btn-primary" onclick="completeReturnProcess()">확정</button></div>
+        </div>
+    </div>
+
+    <script src="sort-table.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
