@@ -80,7 +80,11 @@ function resetSystemData() {
 
 function setupCommonUI() { const dateInputs = document.querySelectorAll('input[type="date"]'); const today = new Date().toISOString().split('T')[0]; dateInputs.forEach(input => { if (!input.value) input.value = today; }); }
 function deleteMasterData(dbKey, idField, idValue) { if (!confirm('삭제하시겠습니까?')) return; let list = JSON.parse(localStorage.getItem(dbKey)) || []; localStorage.setItem(dbKey, JSON.stringify(list.filter(item => item[idField] !== idValue))); location.reload(); }
-function getProductInfo(sku) { const products = JSON.parse(localStorage.getItem(DB_PRODUCTS)) || []; return products.find(p => p.sku === sku) || { name: `(삭제됨: ${sku})`, category: '-', safetyStock: 0 }; }
+function getProductInfo(sku) {
+    const products = JSON.parse(localStorage.getItem(DB_PRODUCTS)) || [];
+    // category가 없으면 '기타' 반환
+    return products.find(p => p.sku === sku) || { name: `(삭제됨: ${sku})`, category: '기타', safetyStock: 0 };
+}
 function deleteTransaction(dbKey, id) { if(!confirm('내역을 삭제하시겠습니까? (재고는 복구되지 않습니다)')) return; let list = JSON.parse(localStorage.getItem(dbKey)) || []; localStorage.setItem(dbKey, JSON.stringify(list.filter(item => item.id !== id))); alert('삭제완료'); location.reload(); }
 
 /* ==========================================================================
@@ -291,9 +295,110 @@ function renderSalesPage() {
 function registerSales() { const skuSel=document.getElementById('so-sku-select'), customer=document.getElementById('so-customer').value, qty=document.getElementById('so-qty').value; if(!skuSel.value||!qty) return alert('정보누락'); const list=JSON.parse(localStorage.getItem(DB_SALES))||[]; list.push({id:'SO-'+Date.now(), sku:skuSel.value, customer:customer, qty:parseInt(qty), status:'Ordered'}); localStorage.setItem(DB_SALES, JSON.stringify(list)); alert('등록완료'); closeModal('salesRegModal'); renderSalesPage(); }
 function openShipmentModal(soId) { const so=JSON.parse(localStorage.getItem(DB_SALES)).find(s=>s.id===soId); document.getElementById('ship-so-id').value=so.id; document.getElementById('ship-req-qty').value=so.qty; document.getElementById('ship-sku-hidden').value=so.sku; document.getElementById('ship-name-hidden').value=getProductInfo(so.sku).name; const lots=(JSON.parse(localStorage.getItem(DB_STOCK))||[]).filter(s=>s.sku===so.sku && s.qty>0); document.getElementById('ship-lot-select').innerHTML=lots.map(l=>`<option value="${l.lotId}">Lot:${l.lotId} (잔고:${l.qty})</option>`).join(''); openModal('shipmentModal'); }
 function confirmShipment() { const soId=document.getElementById('ship-so-id').value, lotId=document.getElementById('ship-lot-select').value, sku=document.getElementById('ship-sku-hidden').value, qty=parseInt(document.getElementById('ship-req-qty').value); if(updateStock('OUT', {sku, lotId, qty, refType:'수주출고', refId:soId})) { let list=JSON.parse(localStorage.getItem(DB_SALES)); let so=list.find(s=>s.id===soId); so.status='Shipped'; localStorage.setItem(DB_SALES, JSON.stringify(list)); alert('출고완료'); closeModal('shipmentModal'); renderSalesPage(); } }
-function renderReturnsPage() { const list = JSON.parse(localStorage.getItem(DB_RETURNS)) || []; document.querySelector('#return-table tbody').innerHTML = list.map(r => { const p = getProductInfo(r.sku); return `<tr><td>${r.id}</td><td>${r.date}</td><td>${p.name}</td><td>${r.qty}</td><td>${r.reason}</td><td>${r.status==='Requested'?'<span class="status-wait">승인대기</span>':'<span class="status-done">'+r.status+'</span>'}</td><td>${r.status==='Requested'?`<button onclick="openReturnProcessModal('${r.id}')">처리하기</button>`:'-'}</td></tr>`; }).join(''); populateProductOptions('ret-sku-select'); }
-function registerReturn() { const skuSel=document.getElementById('ret-sku-select'), qty=document.getElementById('ret-qty').value, reason=document.getElementById('ret-reason').value; const list=JSON.parse(localStorage.getItem(DB_RETURNS))||[]; list.push({id:'RT-'+Date.now(), date:new Date().toISOString().split('T')[0], sku:skuSel.value, qty:parseInt(qty), reason:reason, status:'Requested'}); localStorage.setItem(DB_RETURNS, JSON.stringify(list)); alert('접수완료'); closeModal('returnRegModal'); renderReturnsPage(); }
-function completeReturnProcess() { const id=document.getElementById('proc-ret-id').value, action=document.getElementById('proc-action').value; let list=JSON.parse(localStorage.getItem(DB_RETURNS))||[], item=list.find(r=>r.id===id); if(action==='RESTOCK'){ updateStock('IN', {sku:item.sku, qty:item.qty, lotId:'LOT-RET-'+item.id, location:'WH02-R-01', refType:'반품재입고', refId:item.id}); item.status='Restocked'; alert('재입고완료'); } else{ item.status='Disposed'; alert('폐기완료'); } localStorage.setItem(DB_RETURNS, JSON.stringify(list)); closeModal('returnProcessModal'); renderReturnsPage(); }
+function renderReturnsPage() {
+    const list = JSON.parse(localStorage.getItem(DB_RETURNS)) || [];
+    const tbody = document.querySelector('#return-table tbody');
+    
+    tbody.innerHTML = list.map(r => {
+        const p = getProductInfo(r.sku);
+        return `
+        <tr>
+            <td>${r.id}</td>
+            <td>${r.returnDate}</td> <td>${p.name}</td>
+            <td>${r.qty}</td>
+            <td>${r.reason}</td>
+            <td>
+                ${r.status === 'Requested' ? '<span class="status-wait">승인대기</span>' : 
+                  r.status === 'Disposed' ? '<span class="status-danger">폐기완료</span>' : 
+                  '<span class="status-done">재입고완료</span>'}
+            </td>
+            <td>
+                ${r.status === 'Requested' 
+                    ? `<button class="btn-primary" onclick="openReturnProcessModal('${r.id}')">처리</button>` 
+                    : `<button onclick="openReturnDetailModal('${r.id}')">상세</button>`}
+            </td>
+        </tr>`;
+    }).join('');
+    
+    populateProductOptions('ret-sku-select');
+}
+function registerReturn() {
+    const skuSel = document.getElementById('ret-sku-select');
+    const qty = document.getElementById('ret-qty').value;
+    const reason = document.getElementById('ret-reason').value;
+    const customer = document.getElementById('ret-customer').value; // 고객사 추가
+    const orgDate = document.getElementById('ret-org-date').value;  // 실제 거래일 추가
+    
+    if(!skuSel.value || !qty || !orgDate) return alert('필수 정보 누락');
+
+    const list = JSON.parse(localStorage.getItem(DB_RETURNS)) || [];
+    list.push({
+        id: 'RT-' + Date.now(),
+        returnDate: new Date().toISOString().split('T')[0], // 반품 접수일(오늘)
+        orgDate: orgDate,       // 실제 거래일
+        customer: customer,     // 반품처(고객)
+        sku: skuSel.value,
+        qty: parseInt(qty),
+        reason: reason,
+        status: 'Requested',
+        processDate: null,      // 처리일(폐기/재입고일)
+        actionType: null        // 처리유형
+    });
+    localStorage.setItem(DB_RETURNS, JSON.stringify(list));
+    alert('반품 접수 완료'); closeModal('returnRegModal'); renderReturnsPage();
+}
+function completeReturnProcess() {
+    const id = document.getElementById('proc-ret-id').value;
+    const action = document.getElementById('proc-action').value;
+    const procDate = document.getElementById('proc-date').value; // 처리 날짜 입력
+
+    if(!procDate) return alert('처리 날짜를 입력하세요.');
+
+    let list = JSON.parse(localStorage.getItem(DB_RETURNS)) || [];
+    let item = list.find(r => r.id === id);
+    
+    item.processDate = procDate; // 처리일 저장
+    item.actionType = action;
+
+    if (action === 'RESTOCK') {
+        updateStock('IN', { 
+            sku: item.sku, qty: item.qty, 
+            lotId: 'LOT-RET-'+item.id, location: 'WH02-R-01', 
+            refType: '반품재입고', refId: item.id,
+            date: procDate // 재고 반영일
+        });
+        item.status = 'Restocked'; 
+        alert('재입고 처리 완료');
+    } else {
+        item.status = 'Disposed'; 
+        alert(`폐기 처리 완료 (폐기일: ${procDate})`);
+    }
+
+    localStorage.setItem(DB_RETURNS, JSON.stringify(list)); 
+    closeModal('returnProcessModal'); 
+    renderReturnsPage();
+}
+
+function openReturnDetailModal(id) {
+    const list = JSON.parse(localStorage.getItem(DB_RETURNS)) || [];
+    const item = list.find(r => r.id === id);
+    const p = getProductInfo(item.sku);
+
+    const detailHtml = `
+        <p><strong>반품 ID:</strong> ${item.id}</p>
+        <p><strong>상품명:</strong> ${p.name} (${p.category})</p>
+        <p><strong>반품처(고객):</strong> ${item.customer || '-'}</p>
+        <hr>
+        <p><strong>실제 거래일:</strong> ${item.orgDate}</p>
+        <p><strong>반품 접수일:</strong> ${item.returnDate}</p>
+        <p><strong>처리 완료일:</strong> ${item.processDate || '-'}</p>
+        <hr>
+        <p><strong>처리 결과:</strong> ${item.status} (${item.actionType === 'DISPOSE' ? '폐기' : '재입고'})</p>
+        <p><strong>사유:</strong> ${item.reason}</p>
+    `;
+    document.getElementById('detail-content').innerHTML = detailHtml;
+    openModal('returnDetailModal');
+}
 
 // --- 유틸 ---
 function populateProductOptions(id) { const el=document.getElementById(id); if(el) el.innerHTML='<option value="">상품 선택</option>'+(JSON.parse(localStorage.getItem(DB_PRODUCTS))||[]).map(p=>`<option value="${p.sku}">${p.name}</option>`).join(''); }
