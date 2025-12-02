@@ -1,318 +1,404 @@
 /* ==========================================================================
-   멍밥 ERP - 데이터 시뮬레이션 및 로직 (app.js)
+   멍밥 ERP 통합 스크립트 (app.js)
+   - 기준정보 (Master Data) 관리
+   - 재고 (Stock) 및 수불부 (Ledger) 관리
+   - 공통 UI (탭, 모달) 기능
    ========================================================================== */
 
+// --- 로컬 스토리지 키 정의 ---
+const STORAGE_KEY_PRODUCTS = 'mungbab_products';
+const STORAGE_KEY_PARTNERS = 'mungbab_partners';
+const STORAGE_KEY_WAREHOUSES = 'mungbab_warehouses';
+const STORAGE_KEY_LOCATIONS = 'mungbab_locations';
 const STORAGE_KEY_STOCK = 'mungbab_stock_data';
 const STORAGE_KEY_LEDGER = 'mungbab_ledger_data';
 
-// 1. 초기 더미 데이터 생성 (localStorage가 비어있을 경우)
-function initMockData() {
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. 데이터 초기화 (없으면 더미 데이터 생성)
+    initMasterData();
+    initStockData();
+
+    // 2. 탭 기능 초기화
+    initializeTabs();
+
+    // 3. 페이지별 초기 렌더링
+    // admin.html 인 경우
+    if (document.getElementById('product-category-filter')) {
+        renderProducts();
+    }
+    // stock.html 인 경우
+    if (document.getElementById('current-stock-table')) {
+        loadCurrentStock();
+    }
+});
+
+
+/* ==========================================================================
+   1. 기준정보 관리 (Admin) 로직
+   ========================================================================== */
+
+function initMasterData() {
+    // (1) 창고: 2개 고정
+    if (!localStorage.getItem(STORAGE_KEY_WAREHOUSES)) {
+        const warehouses = [
+            { id: 'WH-01', name: '제1 물류센터 (김포)', type: '일반', use: 'Y' },
+            { id: 'WH-02', name: '제2 반품센터 (용인)', type: '반품/폐기', use: 'Y' }
+        ];
+        localStorage.setItem(STORAGE_KEY_WAREHOUSES, JSON.stringify(warehouses));
+    }
+    // (2) 로케이션
+    if (!localStorage.getItem(STORAGE_KEY_LOCATIONS)) {
+        const locations = [
+            { id: 'WH01-A-01-01', whId: 'WH-01', zone: 'A', rack: '01', shelf: '01', desc: '사료 구역', use: 'Y' },
+            { id: 'WH01-B-01-01', whId: 'WH-01', zone: 'B', rack: '01', shelf: '01', desc: '간식 구역', use: 'Y' },
+            { id: 'WH02-D-01-01', whId: 'WH-02', zone: 'D', rack: '01', shelf: '01', desc: '폐기 대기', use: 'Y' }
+        ];
+        localStorage.setItem(STORAGE_KEY_LOCATIONS, JSON.stringify(locations));
+    }
+    // (3) 상품
+    if (!localStorage.getItem(STORAGE_KEY_PRODUCTS)) {
+        const products = [
+            { sku: 'SKU-D01', name: '프리미엄 그레인프리 사료', category: '사료', safetyStock: 50 },
+            { sku: 'SKU-C01', name: '웰니스 고양이 캔', category: '간식/캔', safetyStock: 200 },
+            { sku: 'SKU-T01', name: '유기농 닭가슴살 육포', category: '간식/캔', safetyStock: 100 }
+        ];
+        localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products));
+    }
+    // (4) 거래처
+    if (!localStorage.getItem(STORAGE_KEY_PARTNERS)) {
+        const partners = [
+            { id: '1001', name: '(주)튼튼펫푸드', type: '공급처', manager: '김철수' },
+            { id: '2001', name: '행복한 펫샵', type: '고객사', manager: '최민준' }
+        ];
+        localStorage.setItem(STORAGE_KEY_PARTNERS, JSON.stringify(partners));
+    }
+}
+
+// --- 렌더링 함수 ---
+function renderProducts() {
+    const tbody = document.querySelector('#tab-products tbody');
+    if (!tbody) return;
+    const filter = document.getElementById('product-category-filter').value;
+    const list = JSON.parse(localStorage.getItem(STORAGE_KEY_PRODUCTS)) || [];
+    
+    tbody.innerHTML = '';
+    list.forEach(item => {
+        if (filter === 'all' || item.category === filter) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.sku}</td><td>${item.name}</td><td>${item.category}</td><td>${item.safetyStock}</td>
+                <td><button onclick="openProductModal('EDIT', '${item.sku}')">수정</button></td>
+            `;
+            tbody.appendChild(tr);
+        }
+    });
+}
+
+function renderWarehouses() {
+    const tbody = document.querySelector('#tab-warehouses tbody');
+    if (!tbody) return;
+    const list = JSON.parse(localStorage.getItem(STORAGE_KEY_WAREHOUSES)) || [];
+    tbody.innerHTML = '';
+    list.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${item.id}</td><td>${item.name}</td><td>${item.type}</td><td>${item.use}</td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+function renderLocations() {
+    const tbody = document.querySelector('#tab-locations tbody');
+    if (!tbody) return;
+    const filter = document.getElementById('wh-select-filter').value;
+    const list = JSON.parse(localStorage.getItem(STORAGE_KEY_LOCATIONS)) || [];
+    
+    tbody.innerHTML = '';
+    list.forEach(item => {
+        if (filter === 'all' || item.whId === filter) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.id}</td><td>${item.whId}</td><td>${item.zone}-${item.rack}-${item.shelf}</td><td>${item.desc}</td><td>${item.use}</td>
+            `;
+            tbody.appendChild(tr);
+        }
+    });
+}
+
+function renderPartners() {
+    const tbody = document.querySelector('#tab-partners tbody');
+    if (!tbody) return;
+    const list = JSON.parse(localStorage.getItem(STORAGE_KEY_PARTNERS)) || [];
+    tbody.innerHTML = '';
+    list.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${item.id}</td><td>${item.name}</td><td>${item.type}</td><td>${item.manager}</td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+// --- 저장/수정 액션 ---
+function openProductModal(mode, sku = null) {
+    const modal = document.getElementById('productModal');
+    const title = document.getElementById('productModalTitle');
+    const btn = document.getElementById('productModalBtn');
+    
+    document.getElementById('prod-sku').value = '';
+    document.getElementById('prod-name').value = '';
+    document.getElementById('prod-cat').value = '사료';
+    document.getElementById('prod-safe').value = 0;
+
+    if (mode === 'EDIT' && sku) {
+        title.innerText = '상품 수정';
+        btn.innerText = '수정 저장';
+        btn.onclick = () => saveProduct('EDIT');
+        const list = JSON.parse(localStorage.getItem(STORAGE_KEY_PRODUCTS)) || [];
+        const target = list.find(p => p.sku === sku);
+        if(target) {
+            document.getElementById('prod-sku').value = target.sku;
+            document.getElementById('prod-sku').readOnly = true;
+            document.getElementById('prod-name').value = target.name;
+            document.getElementById('prod-cat').value = target.category;
+            document.getElementById('prod-safe').value = target.safetyStock;
+        }
+    } else {
+        title.innerText = '신규 상품 등록';
+        btn.innerText = '등록';
+        btn.onclick = () => saveProduct('NEW');
+        document.getElementById('prod-sku').readOnly = false;
+    }
+    openModal('productModal');
+}
+
+function saveProduct(mode) {
+    const sku = document.getElementById('prod-sku').value;
+    const name = document.getElementById('prod-name').value;
+    const cat = document.getElementById('prod-cat').value;
+    const safe = document.getElementById('prod-safe').value;
+    if(!sku || !name) return alert('필수 입력값을 확인하세요.');
+
+    let list = JSON.parse(localStorage.getItem(STORAGE_KEY_PRODUCTS)) || [];
+    if (mode === 'NEW') {
+        if(list.find(p => p.sku === sku)) return alert('이미 존재하는 SKU입니다.');
+        list.push({ sku, name, category: cat, safetyStock: safe });
+    } else {
+        const idx = list.findIndex(p => p.sku === sku);
+        if(idx > -1) list[idx] = { sku, name, category: cat, safetyStock: safe };
+    }
+    localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(list));
+    closeModal('productModal');
+    renderProducts();
+}
+
+function savePartner() {
+    const id = document.getElementById('part-id').value;
+    const name = document.getElementById('part-name').value;
+    const type = document.getElementById('part-type').value;
+    const manager = document.getElementById('part-manager').value;
+    let list = JSON.parse(localStorage.getItem(STORAGE_KEY_PARTNERS)) || [];
+    list.push({ id, name, type, manager });
+    localStorage.setItem(STORAGE_KEY_PARTNERS, JSON.stringify(list));
+    closeModal('partnerModal');
+    renderPartners();
+}
+
+function saveWarehouse() {
+    const id = document.getElementById('wh-id').value;
+    const name = document.getElementById('wh-name').value;
+    const type = document.getElementById('wh-type').value;
+    let list = JSON.parse(localStorage.getItem(STORAGE_KEY_WAREHOUSES)) || [];
+    list.push({ id, name, type, use: 'Y' });
+    localStorage.setItem(STORAGE_KEY_WAREHOUSES, JSON.stringify(list));
+    closeModal('warehouseModal');
+    renderWarehouses();
+}
+
+function saveLocation() {
+    const whId = document.getElementById('loc-wh').value;
+    const zone = document.getElementById('loc-zone').value;
+    const rack = document.getElementById('loc-rack').value;
+    const shelf = document.getElementById('loc-shelf').value;
+    const desc = document.getElementById('loc-desc').value;
+    const id = `${whId.replace('-','')}-${zone}-${rack}-${shelf}`;
+
+    let list = JSON.parse(localStorage.getItem(STORAGE_KEY_LOCATIONS)) || [];
+    list.push({ id, whId, zone, rack, shelf, desc, use: 'Y' });
+    localStorage.setItem(STORAGE_KEY_LOCATIONS, JSON.stringify(list));
+    closeModal('locationModal');
+    renderLocations();
+}
+
+
+/* ==========================================================================
+   2. 재고 관리 (Stock) & 수불부 (Ledger) 로직
+   ========================================================================== */
+
+function initStockData() {
     if (!localStorage.getItem(STORAGE_KEY_STOCK)) {
         const initialStock = [
-            { sku: 'SKU-D01', name: '프리미엄 그레인프리 사료', lotId: 'D01-A251110', location: 'WH01-A-01', qty: 20, expiry: '2025-11-29' },
-            { sku: 'SKU-D01', name: '프리미엄 그레인프리 사료', lotId: 'D01-B251115', location: 'WH01-A-02', qty: 40, expiry: '2026-02-15' },
-            { sku: 'SKU-C01', name: '웰니스 고양이 캔', lotId: 'C01-A251111', location: 'WH01-C-01', qty: 100, expiry: '2026-01-10' }
+            { sku: 'SKU-D01', name: '프리미엄 그레인프리 사료', lotId: 'D01-A251110', location: 'WH01-A-01-01', qty: 20, expiry: '2025-11-29' },
+            { sku: 'SKU-C01', name: '웰니스 고양이 캔', lotId: 'C01-A251111', location: 'WH01-B-01-01', qty: 100, expiry: '2026-01-10' }
         ];
         localStorage.setItem(STORAGE_KEY_STOCK, JSON.stringify(initialStock));
     }
-    
     if (!localStorage.getItem(STORAGE_KEY_LEDGER)) {
         const initialLedger = [
-            { date: '2025-11-10', type: '입고(PO)', sku: 'SKU-D01', name: '프리미엄 그레인프리 사료', refId: 'PO-001', inQty: 20, outQty: 0, balance: 20 },
-            { date: '2025-11-11', type: '입고(PO)', sku: 'SKU-D01', name: '프리미엄 그레인프리 사료', refId: 'PO-002', inQty: 40, outQty: 0, balance: 60 }
+            { date: '2025-11-10', type: '입고(PO)', sku: 'SKU-D01', name: '프리미엄 그레인프리 사료', refId: 'PO-001', inQty: 20, outQty: 0 }
         ];
         localStorage.setItem(STORAGE_KEY_LEDGER, JSON.stringify(initialLedger));
     }
 }
 
-// 2. [Tab 1] 현재고 현황 렌더링
-// ... (이전 initMockData, loadCurrentStock 함수는 유지) ...
+// 현재고 렌더링
+function loadCurrentStock() {
+    const tbody = document.getElementById('stock-tbody');
+    if (!tbody) return;
+    const stockList = JSON.parse(localStorage.getItem(STORAGE_KEY_STOCK)) || [];
+    tbody.innerHTML = '';
+    stockList.forEach(item => {
+        if (item.qty <= 0) return;
+        const daysLeft = Math.ceil((new Date(item.expiry) - new Date()) / (1000 * 60 * 60 * 24));
+        let statusBadge = daysLeft <= 30 ? `<span class="status-wait">임박 (${daysLeft}일)</span>` : '<span class="status-done">정상</span>';
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${item.sku}</td><td>${item.name}</td><td>${item.lotId}</td><td>${item.location}</td>
+            <td style="text-align:right; font-weight:bold">${item.qty.toLocaleString()}</td>
+            <td>${item.expiry}</td><td>${statusBadge}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
 
-/**
- * [핵심 기능] 재고 수불부 조회 (날짜별 재고 계산 로직 포함)
- * - 전체 이력을 시간순으로 정렬하여 잔고(Balance)를 확정한 뒤,
- * - 사용자가 선택한 날짜 범위(End Date)에 맞는 데이터만 필터링하여 표시함.
- */
-/* app.js - loadStockLedger 함수 (전면 수정) */
-
+// 재고 수불부 조회 (날짜별 잔고 계산 포함)
 function loadStockLedger() {
     const tbody = document.getElementById('ledger-tbody');
     if (!tbody) return;
+    
+    const startDate = document.getElementById('ledger-start-date')?.value || '2025-01-01';
+    const endDate = document.getElementById('ledger-end-date')?.value || new Date().toISOString().split('T')[0];
+    const skuFilter = (document.getElementById('ledger-sku-filter')?.value || '').toUpperCase();
 
-    // 1. 조회 조건 가져오기
-    const startDate = document.getElementById('ledger-start-date').value || '2025-01-01';
-    const endDate = document.getElementById('ledger-end-date').value || new Date().toISOString().split('T')[0];
-    const skuFilter = (document.getElementById('ledger-sku-filter').value || '').toUpperCase();
-
-    // 2. 전체 거래 내역 가져오기 (localStorage)
     let transactions = JSON.parse(localStorage.getItem(STORAGE_KEY_LEDGER)) || [];
-
-    // 3. [핵심 로직] 시간 순서대로 정렬 (과거 -> 미래)
-    // 날짜별 재고 흐름을 계산하기 위해 필수
+    // 날짜 오름차순 정렬 (계산용)
     transactions.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    // 4. SKU별 누적 재고 계산 (Running Balance)
-    let skuBalanceMap = {}; // { 'SKU-D01': 50, ... }
-
-    // 모든 거래를 순회하며 잔고를 계산 (표시 여부와 관계없이 계산은 전체 수행해야 정확함)
-    const calculatedTransactions = transactions.map(tx => {
-        // 현재 SKU의 이전 잔고 가져오기 (없으면 0)
-        let currentBal = skuBalanceMap[tx.sku] || 0;
-
-        // 입고면 더하고, 출고면 뺌
-        if (tx.inQty > 0) currentBal += parseInt(tx.inQty);
-        if (tx.outQty > 0) currentBal -= parseInt(tx.outQty);
-
-        // 맵 업데이트
-        skuBalanceMap[tx.sku] = currentBal;
-
-        // 계산된 '그 날짜의 재고'를 트랜잭션 객체에 추가
-        return {
-            ...tx,
-            balanceSnapshot: currentBal // [중요] 날짜별 현재고
-        };
+    let skuBalanceMap = {};
+    
+    // 잔고 계산
+    const calculated = transactions.map(tx => {
+        let bal = skuBalanceMap[tx.sku] || 0;
+        if (tx.inQty > 0) bal += parseInt(tx.inQty);
+        if (tx.outQty > 0) bal -= parseInt(tx.outQty);
+        skuBalanceMap[tx.sku] = bal;
+        return { ...tx, balanceSnapshot: bal };
     });
 
-    // 5. 계산 후, 사용자가 요청한 날짜/SKU로 필터링
-    const filteredList = calculatedTransactions.filter(item => {
-        const inDateRange = item.date >= startDate && item.date <= endDate;
-        const inSkuMatches = skuFilter === '' || item.sku.includes(skuFilter) || item.name.includes(skuFilter);
-        return inDateRange && inSkuMatches;
+    // 필터링
+    const filtered = calculated.filter(item => {
+        const inDate = item.date >= startDate && item.date <= endDate;
+        const inSku = skuFilter === '' || item.sku.includes(skuFilter) || item.name.includes(skuFilter);
+        return inDate && inSku;
     });
 
-    // 6. 보여줄 때는 최신순(미래 -> 과거)으로 뒤집어서 렌더링
-    filteredList.sort((a, b) => new Date(b.date) - new Date(a.date));
+    // 화면용 내림차순 정렬
+    filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    // 7. HTML 렌더링
     tbody.innerHTML = '';
-    if (filteredList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">조회된 내역이 없습니다.</td></tr>';
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center">거래 내역 없음</td></tr>';
         return;
     }
 
-    filteredList.forEach(row => {
+    filtered.forEach(row => {
         const tr = document.createElement('tr');
-        
-        // 입고/출고 색상 구분
-        const typeHtml = row.inQty > 0 
-            ? `<span class="status-done">${row.type}</span>` 
-            : `<span class="status-danger">${row.type}</span>`;
-        
-        // 수량 표시 (+/-)
-        const inQtyStr = row.inQty > 0 ? `+${row.inQty}` : '-';
-        const outQtyStr = row.outQty > 0 ? `-${row.outQty}` : '-';
-
+        const typeHtml = row.inQty > 0 ? `<span class="status-done">${row.type}</span>` : `<span class="status-danger">${row.type}</span>`;
         tr.innerHTML = `
-            <td>${row.date}</td>
-            <td>${typeHtml}</td>
-            <td>${row.sku}</td>
-            <td style="text-align:left;">${row.name}</td>
-            <td>${row.refId || '-'}</td>
-            <td style="color:blue; text-align:right;">${inQtyStr}</td>
-            <td style="color:red; text-align:right;">${outQtyStr}</td>
-            <td style="font-weight:bold; text-align:right; background-color:#f9fafb;">${row.balanceSnapshot}</td>
+            <td>${row.date}</td><td>${typeHtml}</td><td>${row.sku}</td><td>${row.name}</td><td>${row.refId || '-'}</td>
+            <td style="color:blue; text-align:right">${row.inQty > 0 ? '+' + row.inQty : '-'}</td>
+            <td style="color:red; text-align:right">${row.outQty > 0 ? '-' + row.outQty : '-'}</td>
+            <td style="text-align:right; font-weight:bold; background-color:#f9fafb">${row.balanceSnapshot}</td>
         `;
         tbody.appendChild(tr);
     });
 }
 
-// 3. [Tab 2] 재고 수불부 렌더링
-function loadStockLedger() {
-    const tbody = document.getElementById('ledger-tbody');
-    if (!tbody) return;
-
-    const ledgerList = JSON.parse(localStorage.getItem(STORAGE_KEY_LEDGER)) || [];
-    // 최신순 정렬 (날짜 내림차순)
-    ledgerList.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    tbody.innerHTML = '';
-    
-    // 잔고 재계산 로직 (단순화를 위해 저장된 balance 사용하지만, 실제론 여기서 다시 계산 가능)
-    ledgerList.forEach(row => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${row.date}</td>
-            <td>${row.type.includes('입고') ? '<span class="status-done">'+row.type+'</span>' : '<span class="status-danger">'+row.type+'</span>'}</td>
-            <td>${row.sku}</td>
-            <td>${row.name}</td>
-            <td>${row.refId}</td>
-            <td style="color:blue;">${row.inQty > 0 ? '+' + row.inQty : '-'}</td>
-            <td style="color:red;">${row.outQty > 0 ? '-' + row.outQty : '-'}</td>
-            <td style="font-weight:bold;">${row.balance}</td> 
-        `;
-        tbody.appendChild(tr);
-    });
-}
-
-// 4. [핵심] 재고 트랜잭션 처리 (입고/출고 발생 시 호출)
-// type: 'IN'(입고) or 'OUT'(출고)
+// 재고 트랜잭션 발생
 function updateStockTransaction(type, sku, name, lotId, qty, refId) {
     let stockList = JSON.parse(localStorage.getItem(STORAGE_KEY_STOCK)) || [];
     let ledgerList = JSON.parse(localStorage.getItem(STORAGE_KEY_LEDGER)) || [];
     const today = new Date().toISOString().split('T')[0];
 
-    // (1) 현재고(Tbl_StockLots) 업데이트
-    let targetItem = stockList.find(item => item.sku === sku && item.lotId === lotId);
-    
+    let target = stockList.find(i => i.sku === sku && i.lotId === lotId);
     if (type === 'IN') {
-        if (targetItem) {
-            targetItem.qty += parseInt(qty);
-        } else {
-            // 신규 로트 생성
-            stockList.push({
-                sku: sku, name: name, lotId: lotId, location: '입고대기', qty: parseInt(qty), expiry: '2026-12-31' // 데모용
-            });
-        }
-    } else if (type === 'OUT') {
-        if (targetItem) {
-            targetItem.qty -= parseInt(qty);
-            if(targetItem.qty < 0) targetItem.qty = 0; // 마이너스 방지
-        } else {
-            alert('오류: 출고하려는 재고(Lot)가 없습니다.');
-            return;
-        }
+        if (target) target.qty += parseInt(qty);
+        else stockList.push({ sku, name, lotId, location: '입고대기', qty: parseInt(qty), expiry: '2026-12-31' });
+    } else {
+        if (target) target.qty -= parseInt(qty);
+        else return alert('재고 부족');
     }
 
-    // (2) 수불부(Ledger) 기록 추가
-    // 현재 해당 SKU의 총 재고량 계산 (Balance용)
-    const totalStock = stockList.filter(i => i.sku === sku).reduce((acc, cur) => acc + cur.qty, 0);
-
-    ledgerList.push({
-        date: today,
-        type: type === 'IN' ? '입고(PO)' : '출고(SO)',
-        sku: sku,
-        name: name,
-        refId: refId,
-        inQty: type === 'IN' ? qty : 0,
-        outQty: type === 'OUT' ? qty : 0,
-        balance: totalStock // 트랜잭션 후 잔고
-    });
-
-    // (3) 저장
+    ledgerList.push({ date: today, type: type === 'IN'?'입고':'출고', sku, name, refId, inQty: type==='IN'?qty:0, outQty: type==='OUT'?qty:0 });
+    
     localStorage.setItem(STORAGE_KEY_STOCK, JSON.stringify(stockList));
     localStorage.setItem(STORAGE_KEY_LEDGER, JSON.stringify(ledgerList));
-
-    // (4) UI 갱신 (현재 페이지가 stock.html인 경우)
-    if(document.getElementById('current-stock-table')) {
+    
+    if (document.getElementById('current-stock-table')) {
         loadCurrentStock();
         loadStockLedger();
     }
 }
 
-// 5. 버튼 연동용 래퍼 함수 (sales.html / purchase.html 에서 호출)
 function confirmShipment() {
-    // sales.html의 '출고 확정' 버튼에서 호출됨
-    // 예시: SKU-D01 20개 출고
-    if(confirm('수주 건(SO-202511-002)을 출고 확정하시겠습니까?')) {
+    if(confirm('출고 확정하시겠습니까?')) {
         updateStockTransaction('OUT', 'SKU-D01', '프리미엄 그레인프리 사료', 'D01-A251110', 20, 'SO-202511-002');
-        updateStockTransaction('OUT', 'SKU-C01', '웰니스 고양이 캔', 'C01-A251111', 100, 'SO-202511-002');
-        alert('출고가 확정되었으며 재고가 차감되었습니다.');
-        window.location.href = 'stock.html'; // 재고 페이지로 이동하여 확인
+        alert('출고 완료 및 재고 차감됨');
+        window.location.href = 'stock.html';
     }
 }
 
-/* 탭 기능 및 검색 기능 등 기존 app.js 내용 유지 */
+
+/* ==========================================================================
+   3. 공통 유틸리티 (Tabs, Modal)
+   ========================================================================== */
+
 function initializeTabs() {
     const tabLinks = document.querySelectorAll('.tab-link');
     tabLinks.forEach(button => {
         button.addEventListener('click', () => {
             const tabId = button.getAttribute('data-tab');
             button.closest('.tabs').querySelectorAll('.tab-link').forEach(btn => btn.classList.remove('active'));
-            button.closest('.dashboard').querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             button.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
+            const target = document.getElementById(tabId);
+            if (target) target.classList.add('active');
+
+            // 탭 전환 시 데이터 리로드
+            if(tabId === 'tab-products') renderProducts();
+            if(tabId === 'tab-warehouses') renderWarehouses();
+            if(tabId === 'tab-locations') renderLocations();
+            if(tabId === 'tab-partners') renderPartners();
+            if(tabId === 'tab-current-stock') loadCurrentStock();
+            if(tabId === 'tab-stock-ledger') loadStockLedger();
         });
     });
 }
 
+function openModal(modalId) {
+    const m = document.getElementById(modalId);
+    if(m) m.style.display = 'block';
+}
+function closeModal(modalId) {
+    const m = document.getElementById(modalId);
+    if(m) m.style.display = 'none';
+}
+// 검색 필터
 function filterStockTable() {
     const input = document.getElementById('stock-search-input');
+    if(!input) return;
     const filter = input.value.toUpperCase();
-    const table = document.getElementById('current-stock-table');
-    if (!table) return;
-    const tr = table.getElementsByTagName('tr');
-    for (let i = 0; i < tr.length; i++) {
-        if (tr[i].getElementsByTagName('th').length > 0) continue;
-        const tdSku = tr[i].getElementsByTagName('td')[0];
-        const tdName = tr[i].getElementsByTagName('td')[1];
-        if (tdSku && tdName) {
-            if ((tdSku.textContent || tdSku.innerText).toUpperCase().indexOf(filter) > -1 || 
-                (tdName.textContent || tdName.innerText).toUpperCase().indexOf(filter) > -1) {
-                tr[i].style.display = "";
-            } else {
-                tr[i].style.display = "none";
-            }
-        }
-    }
-}
-
-/* app.js - 반품 모달 데이터 바인딩 로직 */
-
-/**
- * [기능] 반품 상세 모달 열기 및 데이터 바인딩
- * @param {Object} returnData - 반품 건 데이터 객체 (예시)
- */
-function openReturnActionModal(returnData) {
-    // 1. 모달 엘리먼트 가져오기
-    const modal = document.getElementById('actionModal');
-    if (!modal) return;
-
-    // 2. [요구사항] 카테고리 구분 불가 시 '기타' 처리
-    // returnData.category 값이 없거나(falsey) 빈 문자열이면 '기타' 사용
-    const categoryName = returnData.category || '기타';
-    
-    // 3. 데이터 바인딩 (input ID는 returns.html에 맞춰져 있어야 함)
-    // 예: <input id="modal-category" ...>
-    document.getElementById('modal-transaction-date').value = returnData.transactionDate; // 실제 거래일
-    document.getElementById('modal-customer').value = returnData.customerName;            // 반품처(어디서)
-    document.getElementById('modal-category').value = categoryName;                       // 카테고리 (기타)
-    
-    // 반품/폐기 날짜 초기값 세팅 (오늘 날짜)
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('modal-return-date').value = returnData.returnDate || today;
-    document.getElementById('modal-action-date').value = today;
-
-    // 모달 표시
-    modal.style.display = 'block';
-}
-
-// [테스트용] 버튼 클릭 시 실행될 예시 함수
-function testOpenReturnModal() {
-    // 가상의 데이터 (카테고리가 없는 경우 테스트)
-    const mockData = {
-        id: 'RT-001',
-        transactionDate: '2025-11-12',
-        customerName: 'C-2001 (행복한 펫샵)',
-        category: '', // [중요] 비어있음 -> '기타'로 표시되어야 함
-        returnDate: '2025-11-18'
-    };
-    openReturnActionModal(mockData);
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. 공통 탭 기능 초기화
-    initializeTabs();
-
-    // 2. [추가됨] 기준정보 데이터가 없으면 localStorage에 생성
-    if (typeof initMasterData === 'function') {
-        initMasterData(); 
-    }
-    
-    // 3. [추가됨] 탭 클릭 시 데이터를 다시 그리도록 이벤트 연결
-    const tabs = document.querySelectorAll('.tab-link');
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const tabId = tab.getAttribute('data-tab');
-            // 각 탭에 맞는 렌더링 함수 호출
-            if(tabId === 'tab-products' && typeof renderProducts === 'function') renderProducts();
-            if(tabId === 'tab-warehouses' && typeof renderWarehouses === 'function') renderWarehouses();
-            if(tabId === 'tab-locations' && typeof renderLocations === 'function') renderLocations();
-            if(tabId === 'tab-partners' && typeof renderPartners === 'function') renderPartners();
-        });
+    const rows = document.getElementById('current-stock-table').querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const txt = row.innerText.toUpperCase();
+        row.style.display = txt.includes(filter) ? '' : 'none';
     });
-
-    // 4. [추가됨] 첫 화면(상품 탭) 데이터 그리기
-    if (typeof renderProducts === 'function') {
-        renderProducts();
-    }
-});
+}
