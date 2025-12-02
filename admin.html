@@ -2,8 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>기준정보 관리 - 멍밥</title>
+    <title>기준정보 관리 - 멍밥 ERP</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,7 +10,7 @@
         <nav class="sidebar">
             <h2>멍밥 ERP</h2>
             <ul>
-                <li><a href="dashboard.html">메인 대시보드</a></li> 
+                <li><a href="dashboard.html">메인 대시보드</a></li>
                 <li class="active"><a href="admin.html">기준정보 관리</a></li>
                 <li><a href="purchase.html">입고 관리</a></li>
                 <li><a href="sales.html">수주 관리</a></li>
@@ -20,9 +19,11 @@
                 <li><a href="returns.html">반품 관리</a></li>
             </ul>
         </nav>
-
         <main class="dashboard">
-            <h1>기준정보 관리 (Master Data)</h1>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h1 style="margin:0;">기준정보 관리 (Master Data)</h1>
+                <button class="btn-danger" onclick="resetSystemData()">⚠️ 시스템 데이터 초기화</button>
+            </div>
 
             <div class="tabs">
                 <button class="tab-link active" data-tab="tab-products">1. 상품 관리</button>
@@ -32,108 +33,28 @@
             </div>
 
             <div id="tab-products" class="tab-content active">
-                <div class="toolbar">
-                    <button class="btn-primary" onclick="openProductModal('NEW')">+ 신규 상품 등록</button>
-                </div>
-                <div class="table-wrapper">
-                    <table class="sortable-table">
-                        <thead><tr><th>SKU</th><th>상품명</th><th>카테고리</th><th>안전재고</th><th>관리</th></tr></thead>
-                        <tbody id="product-tbody"></tbody>
-                    </table>
-                </div>
+                <div class="toolbar"><button class="btn-primary" onclick="openProductModal('NEW')">+ 신규 상품</button></div>
+                <div class="table-wrapper"><table class="sortable-table"><thead><tr><th>SKU</th><th>상품명</th><th>카테고리</th><th>안전재고</th><th>관리</th></tr></thead><tbody id="product-tbody"></tbody></table></div>
             </div>
-
             <div id="tab-partners" class="tab-content">
-                <div class="toolbar">
-                    <button class="btn-primary" onclick="openPartnerModal('NEW')">+ 신규 거래처 등록</button>
-                </div>
-                <div class="table-wrapper">
-                    <table class="sortable-table">
-                        <thead><tr><th>ID</th><th>거래처명</th><th>유형</th><th>담당자</th><th>관리</th></tr></thead>
-                        <tbody id="partner-tbody"></tbody>
-                    </table>
-                </div>
+                <div class="toolbar"><button class="btn-primary" onclick="openPartnerModal('NEW')">+ 신규 거래처</button></div>
+                <div class="table-wrapper"><table class="sortable-table"><thead><tr><th>ID</th><th>거래처명</th><th>유형</th><th>담당자</th><th>관리</th></tr></thead><tbody id="partner-tbody"></tbody></table></div>
             </div>
-
             <div id="tab-warehouses" class="tab-content">
-                <div class="toolbar">
-                    <button class="btn-primary" onclick="openWarehouseModal('NEW')">+ 신규 창고 등록</button>
-                </div>
-                <div class="table-wrapper">
-                    <table class="sortable-table">
-                        <thead><tr><th>ID</th><th>창고명</th><th>유형</th><th>관리</th></tr></thead>
-                        <tbody id="warehouse-tbody"></tbody>
-                    </table>
-                </div>
+                <div class="toolbar"><button class="btn-primary" onclick="openWarehouseModal('NEW')">+ 신규 창고</button></div>
+                <div class="table-wrapper"><table class="sortable-table"><thead><tr><th>ID</th><th>창고명</th><th>유형</th><th>관리</th></tr></thead><tbody id="warehouse-tbody"></tbody></table></div>
             </div>
-
             <div id="tab-locations" class="tab-content">
-                <div class="toolbar">
-                    <button class="btn-primary" onclick="openLocationModal('NEW')">+ 신규 로케이션 등록</button>
-                </div>
-                <div class="table-wrapper">
-                    <table class="sortable-table">
-                        <thead><tr><th>ID</th><th>소속 창고</th><th>설명</th><th>관리</th></tr></thead>
-                        <tbody id="location-tbody"></tbody>
-                    </table>
-                </div>
+                <div class="toolbar"><button class="btn-primary" onclick="openLocationModal('NEW')">+ 신규 로케이션</button></div>
+                <div class="table-wrapper"><table class="sortable-table"><thead><tr><th>ID</th><th>소속 창고</th><th>설명</th><th>관리</th></tr></thead><tbody id="location-tbody"></tbody></table></div>
             </div>
         </main>
     </div>
 
-    <div id="productModal" class="modal">
-        <div class="modal-content modal-sm">
-            <div class="modal-header"><h2 id="prod-modal-title">상품 정보</h2><span class="close" onclick="closeModal('productModal')">&times;</span></div>
-            <div class="modal-body">
-                <input type="hidden" id="prod-mode">
-                <div class="form-group"><label>SKU (고유코드)</label><input type="text" id="prod-sku"></div>
-                <div class="form-group"><label>상품명</label><input type="text" id="prod-name"></div>
-                <div class="form-group"><label>카테고리</label><select id="prod-cat"><option value="사료">사료</option><option value="간식/캔">간식/캔</option><option value="용품">용품</option></select></div>
-                <div class="form-group"><label>안전재고</label><input type="number" id="prod-safe"></div>
-            </div>
-            <div class="modal-footer"><button class="btn-primary" onclick="saveProduct()">저장</button></div>
-        </div>
-    </div>
-
-    <div id="partnerModal" class="modal">
-        <div class="modal-content modal-sm">
-            <div class="modal-header"><h2 id="part-modal-title">거래처 정보</h2><span class="close" onclick="closeModal('partnerModal')">&times;</span></div>
-            <div class="modal-body">
-                <input type="hidden" id="part-mode">
-                <div class="form-group"><label>ID</label><input type="text" id="part-id"></div>
-                <div class="form-group"><label>거래처명</label><input type="text" id="part-name"></div>
-                <div class="form-group"><label>유형</label><select id="part-type"><option value="공급처">공급처</option><option value="고객사">고객사</option></select></div>
-                <div class="form-group"><label>담당자</label><input type="text" id="part-manager"></div>
-            </div>
-            <div class="modal-footer"><button class="btn-primary" onclick="savePartner()">저장</button></div>
-        </div>
-    </div>
-
-    <div id="warehouseModal" class="modal">
-        <div class="modal-content modal-sm">
-            <div class="modal-header"><h2>창고 정보</h2><span class="close" onclick="closeModal('warehouseModal')">&times;</span></div>
-            <div class="modal-body">
-                <input type="hidden" id="wh-mode">
-                <div class="form-group"><label>창고 ID</label><input type="text" id="wh-id"></div>
-                <div class="form-group"><label>창고명</label><input type="text" id="wh-name"></div>
-                <div class="form-group"><label>유형</label><select id="wh-type"><option value="일반">일반</option><option value="반품">반품</option></select></div>
-            </div>
-            <div class="modal-footer"><button class="btn-primary" onclick="saveWarehouse()">저장</button></div>
-        </div>
-    </div>
-
-    <div id="locationModal" class="modal">
-        <div class="modal-content modal-sm">
-            <div class="modal-header"><h2>로케이션 정보</h2><span class="close" onclick="closeModal('locationModal')">&times;</span></div>
-            <div class="modal-body">
-                <input type="hidden" id="loc-mode">
-                <div class="form-group"><label>로케이션 ID</label><input type="text" id="loc-id"></div>
-                <div class="form-group"><label>소속 창고</label><select id="loc-wh"><option value="WH-01">제1 물류센터</option><option value="WH-02">반품 센터</option></select></div>
-                <div class="form-group"><label>설명</label><input type="text" id="loc-desc"></div>
-            </div>
-            <div class="modal-footer"><button class="btn-primary" onclick="saveLocation()">저장</button></div>
-        </div>
-    </div>
+    <div id="productModal" class="modal"><div class="modal-content"><div class="modal-header"><h2 id="prod-modal-title">상품 정보</h2><span class="close" onclick="closeModal('productModal')">&times;</span></div><div class="modal-body"><input type="hidden" id="prod-mode"><div class="form-group"><label>SKU</label><input type="text" id="prod-sku"></div><div class="form-group"><label>상품명</label><input type="text" id="prod-name"></div><div class="form-group"><label>카테고리</label><select id="prod-cat"><option value="사료">사료</option><option value="간식/캔">간식/캔</option><option value="용품">용품</option></select></div><div class="form-group"><label>안전재고</label><input type="number" id="prod-safe"></div></div><div class="modal-footer"><button class="btn-primary" onclick="saveProduct()">저장</button></div></div></div>
+    <div id="partnerModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>거래처 정보</h2><span class="close" onclick="closeModal('partnerModal')">&times;</span></div><div class="modal-body"><input type="hidden" id="part-mode"><div class="form-group"><label>ID</label><input type="text" id="part-id"></div><div class="form-group"><label>거래처명</label><input type="text" id="part-name"></div><div class="form-group"><label>유형</label><select id="part-type"><option value="공급처">공급처</option><option value="고객사">고객사</option></select></div><div class="form-group"><label>담당자</label><input type="text" id="part-manager"></div></div><div class="modal-footer"><button class="btn-primary" onclick="savePartner()">저장</button></div></div></div>
+    <div id="warehouseModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>창고 정보</h2><span class="close" onclick="closeModal('warehouseModal')">&times;</span></div><div class="modal-body"><input type="hidden" id="wh-mode"><div class="form-group"><label>창고 ID</label><input type="text" id="wh-id"></div><div class="form-group"><label>창고명</label><input type="text" id="wh-name"></div><div class="form-group"><label>유형</label><select id="wh-type"><option value="일반">일반</option><option value="반품">반품</option></select></div></div><div class="modal-footer"><button class="btn-primary" onclick="saveWarehouse()">저장</button></div></div></div>
+    <div id="locationModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>로케이션 정보</h2><span class="close" onclick="closeModal('locationModal')">&times;</span></div><div class="modal-body"><input type="hidden" id="loc-mode"><div class="form-group"><label>로케이션 ID</label><input type="text" id="loc-id"></div><div class="form-group"><label>소속 창고</label><select id="loc-wh"><option value="WH-01">제1 물류센터</option><option value="WH-02">반품 센터</option></select></div><div class="form-group"><label>설명</label><input type="text" id="loc-desc"></div></div><div class="modal-footer"><button class="btn-primary" onclick="saveLocation()">저장</button></div></div></div>
 
     <script src="sort-table.js"></script>
     <script src="app.js"></script>

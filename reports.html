@@ -2,8 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>리포트 - 멍밥</title>
+    <title>리포트 - 멍밥 ERP</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -17,140 +16,38 @@
                 <li><a href="purchase.html">입고 관리</a></li>
                 <li><a href="sales.html">수주 관리</a></li>
                 <li><a href="stock.html">재고 관리</a></li>
-                <!-- [수정] 7. 리포트 활성화 -->
                 <li class="active"><a href="reports.html">리포트</a></li>
-                <!-- [수정] 7. 누락된 메뉴 추가 -->
-                <li><a href="returns.html">반품/환불 관리</a></li>
+                <li><a href="returns.html">반품 관리</a></li>
             </ul>
         </nav>
         <main class="dashboard">
-            <h1>리포트</h1>
+            <h1>종합 리포트</h1>
             
-            <div class="widgets">
-                 <div class="widget" style="grid-column: 1 / -1;">
-                    <!-- Tbl_SalesTransactions의 SalePrice, UnitCost를 집계 -->
-                    <h3>월별 매출/수익 리포트</h3>
-                    <canvas id="monthlyProfitChart"></canvas>
-                </div>
+            <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #E5E7EB; margin-bottom: 20px;">
+                <h3>📊 재고 자산 현황</h3>
+                <canvas id="inventoryChart" style="max-height: 300px;"></canvas>
             </div>
 
-            <!-- [수정] 7. 그래프 하단 세부 정보 (Tbl_SalesTransactions) 추가 -->
-            <h3 style="margin-top: 30px;">매출 상세 내역 (Tbl_SalesTransactions)</h3>
+            <h3>매출 내역 (출고 완료)</h3>
             <div class="table-wrapper">
                 <table class="sortable-table">
-                    <thead>
-                        <tr>
-                            <th class="sortable-header">매출일자</th>
-                            <th class="sortable-header">주문(SO_ID)</th>
-                            <th class="sortable-header">SKU</th>
-                            <th class="sortable-header">LotID</th>
-                            <th class="sortable-header">수량</th>
-                            <th class="sortable-header">매출액(Price)</th>
-                            <th class="sortable-header">원가(Cost)</th>
-                            <th class="sortable-header">수익</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- (서버에서 Tbl_SalesTransactions 조회) -->
-                        <tr>
-                            <td>2025-11-12</td>
-                            <td>SO-202511-001</td>
-                            <td>SKU-D01</td>
-                            <td>D01-A251110</td>
-                            <td>20</td>
-                            <td>1,000,000</td>
-                            <td>700,000</td>
-                            <td>300,000</td>
-                        </tr>
-                        <tr>
-                            <td>2025-11-12</td>
-                            <td>SO-202511-001</td>
-                            <td>SKU-C01</td>
-                            <td>C01-A251101</td>
-                            <td>50</td>
-                            <td>90,000</td>
-                            <td>60,000</td>
-                            <td>30,000</td>
-                        </tr>
+                    <thead><tr><th>일자</th><th>주문번호</th><th>상품명</th><th>수량</th><th>예상 매출액</th></tr></thead>
+                    <tbody id="report-sales-tbody">
+                        <tr><td colspan="5" style="text-align:center;">데이터 로딩 중...</td></tr>
                     </tbody>
                 </table>
             </div>
 
-            <!-- Tbl_StockTransactions (재고 원장) -->
-            <h3 style="margin-top: 30px;">재고 원장 (Tbl_StockTransactions)</h3>
-            <div class="toolbar table-toolbar">
-                <div class="filter-group">
-                    <label>SKU:</label> <input type="text" placeholder="SKU...">
-                    <label>LotID:</label> <input type="text" placeholder="LotID...">
-                    <button class="btn-primary">조회</button>
-                </div>
-            </div>
+            <h3 style="margin-top: 30px;">재고 원장 (전체 이력)</h3>
             <div class="table-wrapper">
                 <table class="sortable-table">
-                    <thead>
-                        <tr>
-                            <th class="sortable-header">처리일시 (TxDate)</th>
-                            <th class="sortable-header">SKU</th>
-                            <th class="sortable-header">LotID</th>
-                            <th class="sortable-header">유형 (TxType)</th>
-                            <th class="sortable-header">수량 (+/-)</th>
-                            <th class="sortable-header">참조 (RefID)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>2025-11-17 10:00</td>
-                            <td>SKU-D01</td>
-                            <td>D01-A251110</td>
-                            <td><span class="status-progress">OUT_SO</span></td>
-                            <td>-20</td>
-                            <td>SO-202511-002</td>
-                        </tr>
-                        <tr>
-                            <td>2025-11-15 09:00</td>
-                            <td>SKU-T01</td>
-                            <td>T01-A251115</td>
-                            <td><span class="status-done">IN_PO</span></td>
-                            <td>+150</td>
-                            <td>PO-202511-002</td>
-                        </tr>
-                         <tr>
-                            <td>2025-11-14 14:00</td>
-                            <td>SKU-D01</td>
-                            <td>D01-A251110</td>
-                            <td><span class="status-wait">ADJUST</span></td>
-                            <td>-2</td>
-                            <td>ADJ-001 (파손)</td>
-                        </tr>
-                        <tr>
-                            <td>2025-11-10 11:00</td>
-                            <td>SKU-D01</td>
-                            <td>D01-A251110</td>
-                            <td><span class="status-done">IN_PO</span></td>
-                            <td>+72</td>
-                            <td>PO-202511-001</td>
-                        </tr>
-                    </tbody>
+                    <thead><tr><th>일자</th><th>구분</th><th>SKU</th><th>상품명</th><th>참조번호</th><th>변동량 (+/-)</th><th>잔고</th></tr></thead>
+                    <tbody id="ledger-tbody"></tbody>
                 </table>
             </div>
         </main>
-        </div>
-
-    <script src="data.json"></script> <!-- 데모 데이터 -->
-    <script src="app.js"></script> <!-- 차트 함수 포함 -->
+    </div>
     <script src="sort-table.js"></script>
-    <script>
-        // (서버 API 호출로 변경 필요)
-        document.addEventListener("DOMContentLoaded", () => {
-            fetch('data.json')
-                .then(response => response.json())
-                .then(data => {
-                    if (document.getElementById('monthlyProfitChart')) {
-                        renderProfitChart(data.monthlyProfit);
-                    }
-                })
-                .catch(error => console.error('리포트 차트 데이터 로딩 실패:', error));
-        });
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
