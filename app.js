@@ -42,9 +42,9 @@ function initSystemData() {
     const products = [
         { sku: 'SKU-D01', name: '프리미엄 그레인프리 사료 (10kg)', category: '사료', safetyStock: 50 },
         { sku: 'SKU-D02', name: '관절 튼튼 기능성 사료 (5kg)', category: '사료', safetyStock: 30 },
-        { sku: 'SKU-C01', name: '웰니스 고양이 캔 (참치)', category: '간식/캔', safetyStock: 200 },
-        { sku: 'SKU-C02', name: '유기농 캣닢 트릿', category: '간식/캔', safetyStock: 100 },
-        { sku: 'SKU-S01', name: '대형견용 튼튼 리드줄', category: '용품', safetyStock: 20 }
+        { sku: 'SKU-C01', name: '웰니스 고양이 캔 (참치)', category: '캔', safetyStock: 200 },
+        { sku: 'SKU-S01', name: '유기농 캣닢 트릿', category: '간식', safetyStock: 100 },
+        { sku: 'SKU-S02', name: '고양이들이 환장하는 츄르', category: '간식', safetyStock: 20 }
     ];
     localStorage.setItem(DB_PRODUCTS, JSON.stringify(products));
 
