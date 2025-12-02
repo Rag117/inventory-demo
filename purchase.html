@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>입고 관리 - 멍밥</title>
+    <title>입고 관리 - 멍밥 ERP</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,9 +13,10 @@
                 <li><a href="dashboard.html">메인 대시보드</a></li>
                 <li><a href="admin.html">기준정보 관리</a></li>
                 <li class="active"><a href="purchase.html">입고 관리</a></li>
-                <li><a href="sales.html">수주 관리</a></li> <li><a href="stock.html">재고 관리</a></li>
+                <li><a href="sales.html">수주 관리</a></li>
+                <li><a href="stock.html">재고 관리</a></li>
                 <li><a href="reports.html">리포트</a></li>
-                <li><a href="returns.html">반품/환불 관리</a></li>
+                <li><a href="returns.html">반품 관리</a></li>
             </ul>
         </nav>
         <main class="dashboard">
@@ -26,60 +27,48 @@
             </div>
 
             <div class="table-wrapper">
-                <table class="sortable-table">
+                <table class="sortable-table" id="purchase-table">
                     <thead>
-                        <tr><th>발주번호</th><th>공급처</th><th>품목</th><th>수량</th><th>상태</th></tr>
+                        <tr><th>입고번호</th><th>공급처</th><th>상품명</th><th>수량</th><th>적재위치</th><th>상태/관리</th></tr>
                     </thead>
-                    <tbody>
-                        <tr><td>PO-202511-001</td><td>(주)튼튼펫푸드</td><td>프리미엄 사료 외</td><td>3,500</td><td><span class="status-done">입고 완료</span></td></tr>
-                        <tr><td>PO-202511-002</td><td>내추럴멍</td><td>웰니스 캔</td><td>5,000</td><td><span class="status-done">입고 완료</span></td></tr>
-                    </tbody>
+                    <tbody></tbody>
                 </table>
             </div>
         </main>
     </div>
-
+    
     <div id="purchaseModal" class="modal">
-        <div class="modal-content modal-sm">
+        <div class="modal-content">
             <div class="modal-header">
-                <h2>신규 재고 입고 (Stock In)</h2>
+                <h2>신규 입고(재고) 등록</h2>
                 <span class="close" onclick="closeModal('purchaseModal')">&times;</span>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label>상품 선택 (SKU)</label>
-                    <select id="in-sku" onchange="document.getElementById('in-name').value = this.options[this.selectedIndex].text">
-                        <option value="">상품을 선택하세요</option>
-                        <option value="SKU-D01">SKU-D01 (프리미엄 사료)</option>
-                        <option value="SKU-C01">SKU-C01 (웰니스 캔)</option>
-                        <option value="SKU-T01">SKU-T01 (육포)</option>
-                    </select>
-                    <input type="hidden" id="in-name">
+                    <label>상품 선택</label>
+                    <select id="po-sku-select"></select>
                 </div>
                 <div class="form-group">
-                    <label>입고 수량</label>
-                    <input type="number" id="in-qty" placeholder="수량 입력 (예: 100)" value="100">
+                    <label>적재 로케이션 (위치)</label>
+                    <select id="po-location">
+                        </select>
                 </div>
                 <div class="form-group">
-                    <label>Lot 번호 생성</label>
-                    <input type="text" id="in-lot" value="LOT-NEW-001">
+                    <label>공급처</label>
+                    <input type="text" id="po-partner" placeholder="예: (주)튼튼펫푸드">
                 </div>
                 <div class="form-group">
-                    <label>유통기한</label>
-                    <input type="date" id="in-expiry" value="2026-12-31">
-                </div>
-                <div class="form-group">
-                    <label>적재 로케이션</label>
-                    <input type="text" id="in-loc" value="WH01-Temp">
+                    <label>수량</label>
+                    <input type="number" id="po-qty" value="100">
                 </div>
             </div>
             <div class="modal-footer">
-                <button onclick="closeModal('purchaseModal')">취소</button>
-                <button class="btn-primary" onclick="processPurchaseInput()">입고 확정 및 재고 반영</button>
+                <button class="btn-primary" onclick="registerPurchase()">등록</button>
             </div>
         </div>
     </div>
 
-    <script src="app.js"></script> 
+    <script src="sort-table.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   멍밥 ERP 통합 엔진 (app.js) - Advanced Flow Version
+   멍밥 ERP 통합 엔진 (app.js) - Fixed & Enhanced Version
    ========================================================================== */
 
 // --- 1. 데이터베이스 키 ---
@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setupCommonUI();    
     initializeTabs();   
 
-    // 페이지별 렌더링 라우터
     if (document.getElementById('product-tbody')) renderAdminPage(); 
     if (document.getElementById('inventoryChart')) renderDashboard(); 
     if (document.getElementById('purchase-table')) renderPurchasePage(); 
@@ -29,23 +28,25 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ==========================================================================
-   3. 데이터 초기화 (Bootstrapping)
+   3. 데이터 초기화 (풍부한 예시 데이터)
    ========================================================================== */
 function initSystemData() {
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
     
-    // 유통기한 임박 테스트용 날짜 (오늘 + 10일)
-    const nearExpiryDate = new Date();
-    nearExpiryDate.setDate(today.getDate() + 10); 
-    const nearExpiryStr = nearExpiryDate.toISOString().split('T')[0];
+    // 유통기한 임박용 날짜 (오늘 + 5일)
+    const expirySoon = new Date();
+    expirySoon.setDate(today.getDate() + 5);
+    const expirySoonStr = expirySoon.toISOString().split('T')[0];
 
-    // 1) 상품
+    // 1) 상품 (Master) - 안전재고 테스트를 위해 다양하게 설정
     if (!localStorage.getItem(DB_PRODUCTS)) {
         const products = [
-            { sku: 'SKU-D01', name: '프리미엄 그레인프리 사료', category: '사료', safetyStock: 50 },
-            { sku: 'SKU-C01', name: '웰니스 고양이 캔', category: '간식/캔', safetyStock: 200 },
-            { sku: 'SKU-EXP', name: '[테스트] 유통기한 임박 간식', category: '간식/캔', safetyStock: 10 } // 테스트용
+            { sku: 'SKU-D01', name: '프리미엄 그레인프리 사료 (10kg)', category: '사료', safetyStock: 50 },
+            { sku: 'SKU-D02', name: '관절 튼튼 기능성 사료 (5kg)', category: '사료', safetyStock: 30 },
+            { sku: 'SKU-C01', name: '웰니스 고양이 캔 (참치)', category: '간식/캔', safetyStock: 200 },
+            { sku: 'SKU-C02', name: '유기농 캣닢 트릿', category: '간식/캔', safetyStock: 100 },
+            { sku: 'SKU-S01', name: '대형견용 튼튼 리드줄', category: '용품', safetyStock: 20 }
         ];
         localStorage.setItem(DB_PRODUCTS, JSON.stringify(products));
     }
@@ -53,7 +54,8 @@ function initSystemData() {
     if (!localStorage.getItem(DB_PARTNERS)) {
         localStorage.setItem(DB_PARTNERS, JSON.stringify([
             { id: 'V-001', name: '(주)튼튼펫푸드', type: '공급처', manager: '김철수' },
-            { id: 'C-001', name: '냥이월드', type: '고객사', manager: '이영희' }
+            { id: 'V-002', name: '내추럴멍', type: '공급처', manager: '이영희' },
+            { id: 'C-001', name: '냥이월드', type: '고객사', manager: '박지성' }
         ]));
     }
     // 3) 창고
@@ -67,18 +69,21 @@ function initSystemData() {
     if (!localStorage.getItem(DB_LOCATIONS)) {
         localStorage.setItem(DB_LOCATIONS, JSON.stringify([
             { id: 'WH01-A-01', whId: 'WH-01', desc: 'A구역 (사료)' },
-            { id: 'WH01-B-01', whId: 'WH-01', desc: 'B구역 (간식)' }
+            { id: 'WH01-B-01', whId: 'WH-01', desc: 'B구역 (간식)' },
+            { id: 'WH01-Z-99', whId: 'WH-01', desc: '임시 적재함' }
         ]));
     }
     // 5) 초기 재고
     if (!localStorage.getItem(DB_STOCK)) {
         const stock = [
-            { sku: 'SKU-D01', lotId: 'LOT-INIT-01', location: 'WH01-A-01', qty: 60, date: todayStr, expiry: '2025-12-31' },
-            // [유통기한 임박 테스트 데이터]
-            { sku: 'SKU-EXP', lotId: 'LOT-WARN-01', location: 'WH01-B-01', qty: 50, date: todayStr, expiry: nearExpiryStr }
+            { sku: 'SKU-D01', lotId: 'LOT-INIT-01', location: 'WH01-A-01', qty: 60, date: todayStr, expiry: '2025-12-31' }, // 정상
+            { sku: 'SKU-D02', lotId: 'LOT-INIT-02', location: 'WH01-A-01', qty: 10, date: todayStr, expiry: '2026-01-01' }, // 부족 (안전:30)
+            { sku: 'SKU-C01', lotId: 'LOT-INIT-03', location: 'WH01-B-01', qty: 250, date: todayStr, expiry: '2026-06-30' }, // 충분
+            { sku: 'SKU-C02', lotId: 'LOT-WARN-01', location: 'WH01-B-01', qty: 80, date: todayStr, expiry: expirySoonStr } // 유통기한 임박
         ];
         localStorage.setItem(DB_STOCK, JSON.stringify(stock));
         
+        // 수불부 초기화
         const ledger = stock.map(s => ({
             date: todayStr, type: '기초재고', sku: s.sku, inQty: s.qty, outQty: 0, refId: 'INIT'
         }));
@@ -92,19 +97,17 @@ function setupCommonUI() {
     dateInputs.forEach(input => { if (!input.value) input.value = today; });
 }
 
-// [공통 유틸] 데이터 삭제 함수 (범용)
+// [공통 유틸] 데이터 삭제
 function deleteMasterData(dbKey, idField, idValue) {
-    if (!confirm('정말 삭제하시겠습니까? (연관된 데이터가 있을 수 있습니다)')) return;
-    
+    if (!confirm('정말 삭제하시겠습니까?')) return;
     let list = JSON.parse(localStorage.getItem(dbKey)) || [];
     const newList = list.filter(item => item[idField] !== idValue);
-    
     localStorage.setItem(dbKey, JSON.stringify(newList));
     alert('삭제되었습니다.');
-    location.reload(); // 화면 갱신을 위해 새로고침 (가장 확실한 방법)
+    location.reload(); 
 }
 
-// [공통 유틸] SKU로 상품 정보 찾기 (Admin 데이터 참조)
+// [공통 유틸] SKU로 상품정보(이름) 조회
 function getProductInfo(sku) {
     const products = JSON.parse(localStorage.getItem(DB_PRODUCTS)) || [];
     return products.find(p => p.sku === sku) || { name: `(삭제됨: ${sku})`, category: '-', safetyStock: 0 };
@@ -112,11 +115,9 @@ function getProductInfo(sku) {
 
 
 /* ==========================================================================
-   4. 관리자(Admin) 페이지 - 삭제 기능 추가됨
+   4. 관리자(Admin) 페이지
    ========================================================================== */
-function renderAdminPage() {
-    renderProducts(); renderPartners(); renderWarehouses(); renderLocations();
-}
+function renderAdminPage() { renderProducts(); renderPartners(); renderWarehouses(); renderLocations(); }
 
 function renderProducts() {
     const list = JSON.parse(localStorage.getItem(DB_PRODUCTS)) || [];
@@ -124,13 +125,9 @@ function renderProducts() {
     if(tbody) tbody.innerHTML = list.map(p => `
         <tr>
             <td>${p.sku}</td><td>${p.name}</td><td>${p.category}</td><td>${p.safetyStock}</td>
-            <td>
-                <button onclick="openProductModal('EDIT', '${p.sku}')">수정</button>
-                <button class="btn-danger" onclick="deleteMasterData('${DB_PRODUCTS}', 'sku', '${p.sku}')">삭제</button>
-            </td>
+            <td><button onclick="openProductModal('EDIT', '${p.sku}')">수정</button> <button class="btn-danger" onclick="deleteMasterData('${DB_PRODUCTS}', 'sku', '${p.sku}')">삭제</button></td>
         </tr>`).join('');
 }
-// (상품 등록/수정 모달 로직은 동일)
 function openProductModal(mode, sku='') {
     document.getElementById('prod-mode').value = mode;
     if(mode==='EDIT'){
@@ -150,51 +147,22 @@ function saveProduct() {
     localStorage.setItem(DB_PRODUCTS, JSON.stringify(list)); closeModal('productModal'); renderProducts();
 }
 
-function renderPartners() { 
-    const list = JSON.parse(localStorage.getItem(DB_PARTNERS))||[]; 
-    const tbody = document.getElementById('partner-tbody'); 
-    if(tbody) tbody.innerHTML = list.map(p => `
-        <tr><td>${p.id}</td><td>${p.name}</td><td>${p.type}</td><td>${p.manager}</td>
-        <td>
-            <button onclick="openPartnerModal('EDIT', '${p.id}')">수정</button>
-            <button class="btn-danger" onclick="deleteMasterData('${DB_PARTNERS}', 'id', '${p.id}')">삭제</button>
-        </td></tr>`).join(''); 
-}
-// (거래처 모달 로직 동일 - 생략 없이 유지 필요)
-function openPartnerModal(mode, id='') { document.getElementById('part-mode').value = mode; if(mode==='EDIT'){ const t = (JSON.parse(localStorage.getItem(DB_PARTNERS))||[]).find(p=>p.id===id); if(t){ document.getElementById('part-id').value=t.id; document.getElementById('part-id').readOnly=true; document.getElementById('part-name').value=t.name; document.getElementById('part-type').value=t.type; document.getElementById('part-manager').value=t.manager; } } else { document.getElementById('part-id').value=''; document.getElementById('part-id').readOnly=false; document.getElementById('part-name').value=''; document.getElementById('part-manager').value=''; } openModal('partnerModal'); }
-function savePartner() { const id=document.getElementById('part-id').value, name=document.getElementById('part-name').value, type=document.getElementById('part-type').value, manager=document.getElementById('part-manager').value, mode=document.getElementById('part-mode').value; if(!id) return alert('ID필수'); let list = JSON.parse(localStorage.getItem(DB_PARTNERS))||[]; if(mode==='NEW'){ if(list.find(p=>p.id===id)) return alert('중복'); list.push({id,name,type,manager}); }else{ const idx=list.findIndex(p=>p.id===id); if(idx>-1) list[idx]={id,name,type,manager}; } localStorage.setItem(DB_PARTNERS, JSON.stringify(list)); closeModal('partnerModal'); renderPartners(); }
+// (거래처, 창고, 로케이션 렌더링 함수들은 간결하게 유지)
+function renderPartners(){ const l=JSON.parse(localStorage.getItem(DB_PARTNERS))||[]; const t=document.getElementById('partner-tbody'); if(t)t.innerHTML=l.map(p=>`<tr><td>${p.id}</td><td>${p.name}</td><td>${p.type}</td><td>${p.manager}</td><td><button onclick="openPartnerModal('EDIT','${p.id}')">수정</button> <button class="btn-danger" onclick="deleteMasterData('${DB_PARTNERS}','id','${p.id}')">삭제</button></td></tr>`).join(''); }
+function openPartnerModal(m,i=''){document.getElementById('part-mode').value=m; if(m==='EDIT'){const t=(JSON.parse(localStorage.getItem(DB_PARTNERS))||[]).find(p=>p.id===i); if(t){document.getElementById('part-id').value=t.id; document.getElementById('part-id').readOnly=true; document.getElementById('part-name').value=t.name;}}else{document.getElementById('part-id').value='';document.getElementById('part-id').readOnly=false;document.getElementById('part-name').value='';} openModal('partnerModal');}
+function savePartner(){const i=document.getElementById('part-id').value,n=document.getElementById('part-name').value,t=document.getElementById('part-type').value,m=document.getElementById('part-manager').value,md=document.getElementById('part-mode').value; if(!i)return alert('ID필수'); let l=JSON.parse(localStorage.getItem(DB_PARTNERS))||[]; if(md==='NEW'){l.push({id:i,name:n,type:t,manager:m});}else{const idx=l.findIndex(p=>p.id===i); if(idx>-1)l[idx]={id:i,name:n,type:t,manager:m};} localStorage.setItem(DB_PARTNERS, JSON.stringify(l)); closeModal('partnerModal'); renderPartners();}
 
-function renderWarehouses() { 
-    const list=JSON.parse(localStorage.getItem(DB_WAREHOUSES))||[]; 
-    const t=document.getElementById('warehouse-tbody'); 
-    if(t) t.innerHTML=list.map(w=>`
-        <tr><td>${w.id}</td><td>${w.name}</td><td>${w.type}</td>
-        <td>
-            <button onclick="openWarehouseModal('EDIT','${w.id}')">수정</button>
-            <button class="btn-danger" onclick="deleteMasterData('${DB_WAREHOUSES}', 'id', '${w.id}')">삭제</button>
-        </td></tr>`).join(''); 
-}
-// (창고 모달 로직 동일)
-function openWarehouseModal(mode,id=''){ document.getElementById('wh-mode').value=mode; if(mode==='EDIT'){ const t=(JSON.parse(localStorage.getItem(DB_WAREHOUSES))||[]).find(w=>w.id===id); if(t){ document.getElementById('wh-id').value=t.id; document.getElementById('wh-id').readOnly=true; document.getElementById('wh-name').value=t.name; document.getElementById('wh-type').value=t.type;} }else{ document.getElementById('wh-id').value=''; document.getElementById('wh-id').readOnly=false; document.getElementById('wh-name').value=''; } openModal('warehouseModal'); }
-function saveWarehouse() { const id=document.getElementById('wh-id').value, name=document.getElementById('wh-name').value, type=document.getElementById('wh-type').value, mode=document.getElementById('wh-mode').value; if(!id) return alert('ID필수'); let list=JSON.parse(localStorage.getItem(DB_WAREHOUSES))||[]; if(mode==='NEW'){ if(list.find(w=>w.id===id)) return alert('중복'); list.push({id,name,type}); }else{ const idx=list.findIndex(w=>w.id===id); if(idx>-1) list[idx]={id,name,type}; } localStorage.setItem(DB_WAREHOUSES, JSON.stringify(list)); closeModal('warehouseModal'); renderWarehouses(); }
+function renderWarehouses(){ const l=JSON.parse(localStorage.getItem(DB_WAREHOUSES))||[]; const t=document.getElementById('warehouse-tbody'); if(t)t.innerHTML=l.map(w=>`<tr><td>${w.id}</td><td>${w.name}</td><td>${w.type}</td><td><button onclick="openWarehouseModal('EDIT','${w.id}')">수정</button> <button class="btn-danger" onclick="deleteMasterData('${DB_WAREHOUSES}','id','${w.id}')">삭제</button></td></tr>`).join(''); }
+function openWarehouseModal(m,i=''){document.getElementById('wh-mode').value=m; if(m==='EDIT'){const t=(JSON.parse(localStorage.getItem(DB_WAREHOUSES))||[]).find(w=>w.id===i); if(t){document.getElementById('wh-id').value=t.id;document.getElementById('wh-id').readOnly=true;document.getElementById('wh-name').value=t.name;}}else{document.getElementById('wh-id').value='';document.getElementById('wh-id').readOnly=false;document.getElementById('wh-name').value='';} openModal('warehouseModal');}
+function saveWarehouse(){const i=document.getElementById('wh-id').value,n=document.getElementById('wh-name').value,t=document.getElementById('wh-type').value,md=document.getElementById('wh-mode').value; if(!i)return alert('ID필수'); let l=JSON.parse(localStorage.getItem(DB_WAREHOUSES))||[]; if(md==='NEW'){l.push({id:i,name:n,type:t});}else{const idx=l.findIndex(w=>w.id===i);if(idx>-1)l[idx]={id:i,name:n,type:t};} localStorage.setItem(DB_WAREHOUSES, JSON.stringify(l)); closeModal('warehouseModal'); renderWarehouses();}
 
-function renderLocations(){ 
-    const list=JSON.parse(localStorage.getItem(DB_LOCATIONS))||[]; 
-    const t=document.getElementById('location-tbody'); 
-    if(t) t.innerHTML=list.map(l=>`
-        <tr><td>${l.id}</td><td>${l.whId}</td><td>${l.desc}</td>
-        <td>
-            <button onclick="openLocationModal('EDIT','${l.id}')">수정</button>
-            <button class="btn-danger" onclick="deleteMasterData('${DB_LOCATIONS}', 'id', '${l.id}')">삭제</button>
-        </td></tr>`).join(''); 
-}
-// (로케이션 모달 로직 동일)
-function openLocationModal(mode,id=''){ document.getElementById('loc-mode').value=mode; if(mode==='EDIT'){ const t=(JSON.parse(localStorage.getItem(DB_LOCATIONS))||[]).find(l=>l.id===id); if(t){ document.getElementById('loc-id').value=t.id; document.getElementById('loc-id').readOnly=true; document.getElementById('loc-wh').value=t.whId; document.getElementById('loc-desc').value=t.desc; } }else{ document.getElementById('loc-id').value=''; document.getElementById('loc-id').readOnly=false; document.getElementById('loc-desc').value=''; } openModal('locationModal'); }
-function saveLocation(){ const id=document.getElementById('loc-id').value, whId=document.getElementById('loc-wh').value, desc=document.getElementById('loc-desc').value, mode=document.getElementById('loc-mode').value; if(!id)return alert('ID필수'); let list=JSON.parse(localStorage.getItem(DB_LOCATIONS))||[]; if(mode==='NEW'){ if(list.find(l=>l.id===id)) return alert('중복'); list.push({id,whId,desc}); }else{ const idx=list.findIndex(l=>l.id===id); if(idx>-1) list[idx]={id,whId,desc}; } localStorage.setItem(DB_LOCATIONS, JSON.stringify(list)); closeModal('locationModal'); renderLocations(); }
+function renderLocations(){ const l=JSON.parse(localStorage.getItem(DB_LOCATIONS))||[]; const t=document.getElementById('location-tbody'); if(t)t.innerHTML=l.map(o=>`<tr><td>${o.id}</td><td>${o.whId}</td><td>${o.desc}</td><td><button onclick="openLocationModal('EDIT','${o.id}')">수정</button> <button class="btn-danger" onclick="deleteMasterData('${DB_LOCATIONS}','id','${o.id}')">삭제</button></td></tr>`).join(''); }
+function openLocationModal(m,i=''){document.getElementById('loc-mode').value=m; if(m==='EDIT'){const t=(JSON.parse(localStorage.getItem(DB_LOCATIONS))||[]).find(o=>o.id===i); if(t){document.getElementById('loc-id').value=t.id;document.getElementById('loc-id').readOnly=true;document.getElementById('loc-desc').value=t.desc;}}else{document.getElementById('loc-id').value='';document.getElementById('loc-id').readOnly=false;document.getElementById('loc-desc').value='';} openModal('locationModal');}
+function saveLocation(){const i=document.getElementById('loc-id').value,w=document.getElementById('loc-wh').value,d=document.getElementById('loc-desc').value,md=document.getElementById('loc-mode').value; if(!i)return alert('ID필수'); let l=JSON.parse(localStorage.getItem(DB_LOCATIONS))||[]; if(md==='NEW'){l.push({id:i,whId:w,desc:d});}else{const idx=l.findIndex(o=>o.id===i);if(idx>-1)l[idx]={id:i,whId:w,desc:d};} localStorage.setItem(DB_LOCATIONS, JSON.stringify(l)); closeModal('locationModal'); renderLocations();}
 
 
 /* ==========================================================================
-   5. 핵심 로직 - [입고 등록 -> 재고 반영] & [대시보드 알림]
+   5. 핵심 로직: 재고 트랜잭션 & 대시보드
    ========================================================================== */
 
 function updateStock(actionType, data) {
@@ -203,15 +171,14 @@ function updateStock(actionType, data) {
     const today = new Date().toISOString().split('T')[0];
 
     if (actionType === 'IN') {
-        // [로직] 같은 SKU, Lot, 위치면 수량 합치기, 아니면 신규 생성
+        // 동일 SKU, Lot, Location이 있으면 수량 합산
         let target = stockList.find(s => s.sku === data.sku && s.lotId === data.lotId && s.location === data.location);
         if (target) {
             target.qty += parseInt(data.qty);
         } else {
             stockList.push({
-                sku: data.sku, 
-                lotId: data.lotId, location: data.location, qty: parseInt(data.qty),
-                date: data.date || today, expiry: data.expiry || ''
+                sku: data.sku, lotId: data.lotId, location: data.location,
+                qty: parseInt(data.qty), date: data.date || today, expiry: data.expiry || ''
             });
         }
         ledgerList.push({ date: today, type: data.refType || '입고', sku: data.sku, inQty: data.qty, outQty: 0, refId: data.refId });
@@ -233,7 +200,7 @@ function renderDashboard() {
     const stockList = JSON.parse(localStorage.getItem(DB_STOCK)) || [];
     const products = JSON.parse(localStorage.getItem(DB_PRODUCTS)) || [];
     
-    // 1. SKU별 총 재고량 집계 (Lot 합산)
+    // 1. SKU별 총 재고량 집계
     const stockBySku = {};
     stockList.forEach(s => {
         if (!stockBySku[s.sku]) stockBySku[s.sku] = 0;
@@ -241,40 +208,36 @@ function renderDashboard() {
     });
 
     // 2. 차트 렌더링
-    const labels = Object.keys(stockBySku).map(sku => getProductInfo(sku).name);
-    const dataValues = Object.values(stockBySku);
     const ctx = document.getElementById('inventoryChart').getContext('2d');
+    const labels = Object.keys(stockBySku).map(sku => getProductInfo(sku).name);
     new Chart(ctx, {
         type: 'bar',
         data: {
             labels: labels,
-            datasets: [{ label: '현재 총 재고량', data: dataValues, backgroundColor: 'rgba(54, 162, 235, 0.6)' }]
+            datasets: [{ label: '현재 재고량', data: Object.values(stockBySku), backgroundColor: '#3B82F6' }]
         }
     });
 
-    // 3. 재고 부족 알림 (기준정보의 안전재고와 비교)
+    // 3. 재고 부족 알림 (Master의 안전재고 vs 현재고)
     const lowStockList = document.getElementById('low-stock-list');
     lowStockList.innerHTML = '';
     products.forEach(p => {
-        const current = stockBySku[p.sku] || 0; 
+        const current = stockBySku[p.sku] || 0;
         if (current < p.safetyStock) {
             lowStockList.innerHTML += `<li>⚠️ [${p.name}] 현재: ${current} < 안전: ${p.safetyStock}</li>`;
         }
     });
 
-    // 4. 유통기한 임박 알림 (오늘 기준 30일 이내)
+    // 4. 유통기한 알림 (30일 이내)
     const expiryList = document.getElementById('expiry-list');
     expiryList.innerHTML = '';
     const today = new Date();
-    
     stockList.forEach(s => {
         if (s.qty > 0 && s.expiry) {
             const p = getProductInfo(s.sku);
             const expDate = new Date(s.expiry);
-            const diffTime = expDate - today;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const diffDays = Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
             
-            // 유통기한이 지났거나(음수), 30일 이내인 경우
             if (diffDays <= 30) {
                 const color = diffDays < 0 ? 'red' : 'orange';
                 const msg = diffDays < 0 ? `만료됨 (${Math.abs(diffDays)}일 지남)` : `${diffDays}일 남음`;
@@ -300,30 +263,41 @@ function loadCurrentStock() {
         </tr>`;
     }).join('');
 }
+
 function loadStockLedger() {
     const tbody = document.getElementById('ledger-tbody');
     if(!tbody) return;
     const ledgerList = JSON.parse(localStorage.getItem(DB_LEDGER)) || [];
-    let runningBalance = {};
     
+    // 날짜 필터링 적용
+    const startDate = document.getElementById('ledger-start-date') ? document.getElementById('ledger-start-date').value : '';
+    const endDate = document.getElementById('ledger-end-date') ? document.getElementById('ledger-end-date').value : '';
+    
+    let runningBalance = {};
     let html = '';
-    ledgerList.forEach(row => {
+
+    // 날짜 오름차순 정렬 후 계산
+    ledgerList.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(row => {
         const p = getProductInfo(row.sku);
         if (!runningBalance[row.sku]) runningBalance[row.sku] = 0;
         runningBalance[row.sku] += (row.inQty - row.outQty);
-        html += `
-            <tr>
-                <td>${row.date}</td><td><span class="${row.type.includes('입고')?'status-done':'status-danger'}">${row.type}</span></td>
-                <td>${row.sku}</td><td>${p.name}</td><td>${row.refId}</td>
-                <td style="color:blue;">${row.inQty>0?'+'+row.inQty:'-'}</td><td style="color:red;">${row.outQty>0?'-'+row.outQty:'-'}</td><td>${runningBalance[row.sku]}</td>
-            </tr>`;
+        
+        // 날짜 필터 체크 (필터가 있을 때만 체크)
+        if (startDate && row.date < startDate) return;
+        if (endDate && row.date > endDate) return;
+
+        html += `<tr>
+            <td>${row.date}</td><td><span class="${row.type.includes('입고')?'status-done':'status-danger'}">${row.type}</span></td>
+            <td>${row.sku}</td><td>${p.name}</td><td>${row.refId}</td>
+            <td style="color:blue;">${row.inQty>0?'+'+row.inQty:'-'}</td><td style="color:red;">${row.outQty>0?'-'+row.outQty:'-'}</td><td>${runningBalance[row.sku]}</td>
+        </tr>`;
     });
     tbody.innerHTML = html;
 }
 function filterStockTable() { loadCurrentStock(); }
 
 
-// --- [입고 관리] - 신규 상품 연동 ---
+// --- [입고 관리] - 로케이션 선택 추가 ---
 function renderPurchasePage() {
     const list = JSON.parse(localStorage.getItem(DB_PURCHASE)) || [];
     const tbody = document.querySelector('#purchase-table tbody');
@@ -331,23 +305,32 @@ function renderPurchasePage() {
         const p = getProductInfo(po.sku);
         return `<tr>
             <td>${po.id}</td><td>${po.partnerName}</td><td>${p.name}</td><td>${po.qty}</td>
-            <td>${po.status === 'Ordered' ? `<button class="btn-primary" onclick="processPurchaseReceive('${po.id}')">입고처리</button>` : '<span class="status-done">입고완료</span>'}</td>
+            <td>${po.location || '-'}</td>
+            <td>${po.status === 'Ordered' ? `<button class="btn-primary" onclick="processPurchaseReceive('${po.id}')">입고확정</button>` : '<span class="status-done">입고완료</span>'}</td>
         </tr>`;
     }).join('');
-    // *중요* 페이지 로드 시에도 옵션 갱신
-    populateProductOptions('po-sku-select');
 }
 
 function registerPurchase() {
     const skuSel = document.getElementById('po-sku-select');
     const partner = document.getElementById('po-partner').value;
+    const location = document.getElementById('po-location').value; // 로케이션 선택값
     const qty = document.getElementById('po-qty').value;
-    if (!skuSel.value || !qty) return alert('필수 정보 누락');
+    
+    if (!skuSel.value || !qty || !location) return alert('모든 정보를 입력해주세요.');
     
     const list = JSON.parse(localStorage.getItem(DB_PURCHASE)) || [];
-    list.push({ id: 'PO-' + Date.now(), sku: skuSel.value, partnerName: partner, qty: parseInt(qty), date: new Date().toISOString().split('T')[0], status: 'Ordered' });
+    list.push({ 
+        id: 'PO-' + Date.now(), 
+        sku: skuSel.value, 
+        partnerName: partner, 
+        location: location,
+        qty: parseInt(qty), 
+        date: new Date().toISOString().split('T')[0], 
+        status: 'Ordered' 
+    });
     localStorage.setItem(DB_PURCHASE, JSON.stringify(list));
-    alert('발주 등록 완료'); closeModal('purchaseModal'); renderPurchasePage();
+    alert('발주(입고예정) 등록 완료'); closeModal('purchaseModal'); renderPurchasePage();
 }
 
 function processPurchaseReceive(poId) {
@@ -355,22 +338,24 @@ function processPurchaseReceive(poId) {
     const po = list.find(p => p.id === poId);
     if (!po) return;
     
-    // 입고 처리 시 Lot 번호 생성 및 유통기한 임의 설정 (실무에선 입력받음)
+    // 로케이션이 없으면 임시 지정
+    const targetLoc = po.location || 'WH01-Temp';
     const lotId = 'LOT-' + poId.split('-')[1];
-    const expiryDate = new Date();
-    expiryDate.setFullYear(expiryDate.getFullYear() + 1); // 1년 뒤
     
-    // [핵심] 재고 원장에 반영
+    // 1년 후 유통기한 자동 설정 (테스트용)
+    const expiry = new Date(); expiry.setFullYear(expiry.getFullYear() + 1);
+    
+    // 재고 반영
     updateStock('IN', { 
         sku: po.sku, qty: po.qty, 
-        lotId: lotId, location: 'WH01-Temp', 
+        lotId: lotId, location: targetLoc, 
         refType: '구매입고', refId: po.id, 
-        expiry: expiryDate.toISOString().split('T')[0] 
+        expiry: expiry.toISOString().split('T')[0] 
     });
     
     po.status = 'Received';
     localStorage.setItem(DB_PURCHASE, JSON.stringify(list));
-    alert('입고 처리 완료 (재고 증가)'); renderPurchasePage();
+    alert(`[${targetLoc}] 위치로 입고 및 재고 반영 완료!`); renderPurchasePage();
 }
 
 // --- [수주 관리] ---
@@ -384,7 +369,6 @@ function renderSalesPage() {
             <td>${so.status === 'Ordered' ? `<button class="btn-primary" onclick="openShipmentModal('${so.id}')">출고처리</button>` : '<span class="status-done">출고완료</span>'}</td>
         </tr>`;
     }).join('');
-    populateProductOptions('so-sku-select');
 }
 function registerSales() {
     const skuSel = document.getElementById('so-sku-select');
@@ -405,7 +389,6 @@ function openShipmentModal(soId) {
     document.getElementById('ship-sku-hidden').value = so.sku;
     document.getElementById('ship-name-hidden').value = p.name;
     const stockList = JSON.parse(localStorage.getItem(DB_STOCK)) || [];
-    // 재고 있는 Lot만 필터
     const availableLots = stockList.filter(s => s.sku === so.sku && s.qty > 0);
     const lotSelect = document.getElementById('ship-lot-select');
     lotSelect.innerHTML = availableLots.map(l => `<option value="${l.lotId}">Lot: ${l.lotId} (잔고: ${l.qty})</option>`).join('');
@@ -439,7 +422,6 @@ function renderReturnsPage() {
             <td>${r.status === 'Requested' ? `<button onclick="openReturnProcessModal('${r.id}')">처리하기</button>` : '-'}</td>
         </tr>`;
     }).join('');
-    populateProductOptions('ret-sku-select');
 }
 function registerReturn() {
     const skuSel = document.getElementById('ret-sku-select');
@@ -464,14 +446,22 @@ function completeReturnProcess() {
     localStorage.setItem(DB_RETURNS, JSON.stringify(list)); closeModal('returnProcessModal'); renderReturnsPage();
 }
 
+
 // --- 유틸리티 ---
-// [드롭다운] Admin에서 상품 등록/삭제 시 반영되도록 매번 새로 생성
 function populateProductOptions(selectId) {
     const el = document.getElementById(selectId);
     if (!el) return;
     const products = JSON.parse(localStorage.getItem(DB_PRODUCTS)) || [];
     el.innerHTML = '<option value="">상품 선택</option>' + products.map(p => `<option value="${p.sku}">${p.name}</option>`).join('');
 }
+// [추가] 로케이션 옵션 생성 함수
+function populateLocationOptions(selectId) {
+    const el = document.getElementById(selectId);
+    if (!el) return;
+    const locations = JSON.parse(localStorage.getItem(DB_LOCATIONS)) || [];
+    el.innerHTML = '<option value="">로케이션 선택</option>' + locations.map(l => `<option value="${l.id}">${l.id} (${l.desc})</option>`).join('');
+}
+
 function initializeTabs() {
     document.querySelectorAll('.tab-link').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -484,11 +474,10 @@ function initializeTabs() {
     });
 }
 function openModal(id) { 
-    // 모달 열 때 드롭다운 최신화 (삭제된 상품은 안 보이게)
-    if(id === 'purchaseModal') populateProductOptions('po-sku-select');
+    // 모달 열 때 드롭다운 데이터 최신화 (삭제된 상품/로케이션 반영)
+    if(id === 'purchaseModal') { populateProductOptions('po-sku-select'); populateLocationOptions('po-location'); }
     if(id === 'salesRegModal') populateProductOptions('so-sku-select');
     if(id === 'returnRegModal') populateProductOptions('ret-sku-select');
-    
     document.getElementById(id).style.display = 'block'; 
 }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }

@@ -2,8 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>재고 관리 - 멍밥</title>
+    <title>재고 관리 - 멍밥 ERP</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,93 +16,50 @@
                 <li><a href="sales.html">수주 관리</a></li>
                 <li class="active"><a href="stock.html">재고 관리</a></li>
                 <li><a href="reports.html">리포트</a></li>
-                <li><a href="returns.html">반품/환불 관리</a></li>
+                <li><a href="returns.html">반품 관리</a></li>
             </ul>
         </nav>
         <main class="dashboard">
             <h1>통합 재고 관리</h1>
-            
             <div class="tabs">
-                <button class="tab-link active" data-tab="tab-current-stock" onclick="loadCurrentStock()">1. 현재고 현황 (Current Stock)</button>
-                <button class="tab-link" data-tab="tab-stock-ledger" onclick="loadStockLedger()">2. 재고 수불부 (Stock Ledger)</button>
+                <button class="tab-link active" data-tab="tab-current">1. 현재고 현황</button>
+                <button class="tab-link" data-tab="tab-ledger">2. 재고 수불부</button>
             </div>
 
-            <div id="tab-current-stock" class="tab-content active">
-                <div class="toolbar table-toolbar">
-                     <div class="filter-group">
-                        <label>통합 검색:</label>
-                        <input type="text" id="stock-search-input" placeholder="SKU 코드 또는 상품명 검색..." style="min-width: 300px;" onkeyup="filterStockTable()">
+            <div id="tab-current" class="tab-content active">
+                <div class="toolbar">
+                    <div style="display:flex; gap:10px; width:100%;">
+                        <input type="text" id="stock-search-input" placeholder="SKU 또는 상품명 검색..." style="flex:1;" onkeyup="filterStockTable()">
                         <button class="btn-primary" onclick="filterStockTable()">검색</button>
-                     </div>
-                     <div class="toolbar-buttons">
-                        <button onclick="openModal('moveModal')">재고 이동</button>
-                        <button onclick="openModal('adjustModal')">재고 조정</button>
-                     </div>
+                    </div>
                 </div>
-
                 <div class="table-wrapper">
                     <table class="sortable-table" id="current-stock-table">
-                        <thead>
-                            <tr>
-                                <th class="sortable-header">SKU</th>
-                                <th class="sortable-header">상품명</th>
-                                <th class="sortable-header">Lot 번호 (PK)</th>
-                                <th class="sortable-header">창고/로케이션</th>
-                                <th class="sortable-header">현재고 (Qty)</th>
-                                <th class="sortable-header">유통기한</th>
-                                <th class="sortable-header">상태</th>
-                            </tr>
-                        </thead>
-                        <tbody id="stock-tbody">
-                            </tbody>
+                        <thead><tr><th>SKU</th><th>상품명</th><th>Lot 번호</th><th>로케이션</th><th>현재고</th><th>유통기한</th><th>상태</th></tr></thead>
+                        <tbody id="stock-tbody"></tbody>
                     </table>
                 </div>
             </div>
 
-            <div id="tab-stock-ledger" class="tab-content">
-                <div class="toolbar table-toolbar">
-                    <div class="filter-group">
+            <div id="tab-ledger" class="tab-content">
+                <div class="toolbar" style="justify-content: flex-start; gap: 15px;">
+                    <div style="display:flex; align-items:center; gap:5px;">
                         <label>조회 기간:</label>
-                        <input type="date" id="ledger-start-date" value="2025-11-01"> ~ 
-                        <input type="date" id="ledger-end-date" value="2025-11-30">
+                        <input type="date" id="ledger-start-date"> ~ 
+                        <input type="date" id="ledger-end-date">
                         <button class="btn-primary" onclick="loadStockLedger()">조회</button>
                     </div>
-                    <div class="filter-group" style="margin-left: 20px;">
-                        <label>SKU 필터:</label>
-                        <input type="text" id="ledger-sku-filter" placeholder="SKU 입력...">
-                    </div>
                 </div>
-                
                 <div class="table-wrapper">
                     <table class="sortable-table">
-                        <thead>
-                            <tr>
-                                <th class="sortable-header">일자 (Date)</th>
-                                <th class="sortable-header">구분 (Type)</th>
-                                <th class="sortable-header">SKU</th>
-                                <th class="sortable-header">상품명</th>
-                                <th class="sortable-header">참조 번호</th>
-                                <th class="sortable-header" style="color:blue;">입고 (+)</th>
-                                <th class="sortable-header" style="color:red;">출고 (-)</th>
-                                <th class="sortable-header">재고 잔량 (Balance)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ledger-tbody">
-                            </tbody>
+                        <thead><tr><th>일자</th><th>구분</th><th>SKU</th><th>상품명</th><th>참조번호</th><th style="color:blue;">입고(+)</th><th style="color:red;">출고(-)</th><th>잔고</th></tr></thead>
+                        <tbody id="ledger-tbody"></tbody>
                     </table>
                 </div>
             </div>
         </main>
     </div>
-
-    <script src="app.js"></script> 
     <script src="sort-table.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeTabs();
-            initMockData(); // 초기 데이터 생성
-            loadCurrentStock(); // 페이지 로드 시 현재고 표시
-        });
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
