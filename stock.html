@@ -24,15 +24,15 @@
             <h1>통합 재고 관리</h1>
             
             <div class="tabs">
-                <button class="tab-link active" data-tab="tab-current-stock">현재고 현황 (Current)</button>
-                <button class="tab-link" data-tab="tab-stock-ledger">재고 수불부 (Ledger)</button>
+                <button class="tab-link active" data-tab="tab-current-stock" onclick="loadCurrentStock()">1. 현재고 현황 (Current Stock)</button>
+                <button class="tab-link" data-tab="tab-stock-ledger" onclick="loadStockLedger()">2. 재고 수불부 (Stock Ledger)</button>
             </div>
 
             <div id="tab-current-stock" class="tab-content active">
                 <div class="toolbar table-toolbar">
                      <div class="filter-group">
                         <label>통합 검색:</label>
-                        <input type="text" id="stock-search-input" placeholder="SKU코드 또는 상품명 입력..." style="min-width: 300px;">
+                        <input type="text" id="stock-search-input" placeholder="SKU 코드 또는 상품명 검색..." style="min-width: 300px;" onkeyup="filterStockTable()">
                         <button class="btn-primary" onclick="filterStockTable()">검색</button>
                      </div>
                      <div class="toolbar-buttons">
@@ -47,29 +47,15 @@
                             <tr>
                                 <th class="sortable-header">SKU</th>
                                 <th class="sortable-header">상품명</th>
-                                <th class="sortable-header">Lot 번호</th>
+                                <th class="sortable-header">Lot 번호 (PK)</th>
                                 <th class="sortable-header">창고/로케이션</th>
                                 <th class="sortable-header">현재고 (Qty)</th>
                                 <th class="sortable-header">유통기한</th>
+                                <th class="sortable-header">상태</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr class="stock-row">
-                                <td>SKU-D01</td>
-                                <td>프리미엄 그레인프리 사료</td>
-                                <td>D01-A251110</td>
-                                <td>WH01-A-01</td> <td>20</td>
-                                <td>2025-11-29</td>
-                            </tr>
-                            <tr class="stock-row">
-                                <td>SKU-C01</td>
-                                <td>웰니스 고양이 캔</td>
-                                <td>C01-A251111</td>
-                                <td>WH01-C-01</td>
-                                <td>100</td>
-                                <td>2026-01-10</td>
-                            </tr>
-                        </tbody>
+                        <tbody id="stock-tbody">
+                            </tbody>
                     </table>
                 </div>
             </div>
@@ -77,57 +63,47 @@
             <div id="tab-stock-ledger" class="tab-content">
                 <div class="toolbar table-toolbar">
                     <div class="filter-group">
-                        <label>기준 일자:</label>
-                        <input type="date" id="ledger-date" value="2025-12-02">
-                        <span style="font-size: 0.8em; color: #666;">* 해당 날짜까지의 재고 흐름을 계산합니다.</span>
+                        <label>조회 기간:</label>
+                        <input type="date" id="ledger-start-date" value="2025-11-01"> ~ 
+                        <input type="date" id="ledger-end-date" value="2025-11-30">
+                        <button class="btn-primary" onclick="loadStockLedger()">조회</button>
                     </div>
-                    <button class="btn-primary">조회</button>
+                    <div class="filter-group" style="margin-left: 20px;">
+                        <label>SKU 필터:</label>
+                        <input type="text" id="ledger-sku-filter" placeholder="SKU 입력...">
+                    </div>
                 </div>
                 
                 <div class="table-wrapper">
                     <table class="sortable-table">
                         <thead>
                             <tr>
-                                <th class="sortable-header">일자</th>
-                                <th class="sortable-header">구분</th>
+                                <th class="sortable-header">일자 (Date)</th>
+                                <th class="sortable-header">구분 (Type)</th>
                                 <th class="sortable-header">SKU</th>
                                 <th class="sortable-header">상품명</th>
-                                <th class="sortable-header">입고</th>
-                                <th class="sortable-header">출고</th>
-                                <th class="sortable-header">재고 잔량</th>
+                                <th class="sortable-header">참조 번호</th>
+                                <th class="sortable-header" style="color:blue;">입고 (+)</th>
+                                <th class="sortable-header" style="color:red;">출고 (-)</th>
+                                <th class="sortable-header">재고 잔량 (Balance)</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>2025-12-01</td>
-                                <td><span class="status-done">입고(PO)</span></td>
-                                <td>SKU-D01</td>
-                                <td>프리미엄 그레인프리 사료</td>
-                                <td>+50</td>
-                                <td>0</td>
-                                <td>70</td>
-                            </tr>
-                             <tr>
-                                <td>2025-12-02</td>
-                                <td><span class="status-danger">출고(SO)</span></td>
-                                <td>SKU-D01</td>
-                                <td>프리미엄 그레인프리 사료</td>
-                                <td>0</td>
-                                <td>-10</td>
-                                <td>60</td>
-                            </tr>
-                        </tbody>
+                        <tbody id="ledger-tbody">
+                            </tbody>
                     </table>
                 </div>
             </div>
-
         </main>
     </div>
 
     <script src="app.js"></script> 
     <script src="sort-table.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', initializeTabs);
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeTabs();
+            initMockData(); // 초기 데이터 생성
+            loadCurrentStock(); // 페이지 로드 시 현재고 표시
+        });
     </script>
 </body>
 </html>

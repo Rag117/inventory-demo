@@ -14,7 +14,8 @@
                 <li><a href="dashboard.html">메인 대시보드</a></li> 
                 <li class="active"><a href="admin.html">기준정보 관리</a></li>
                 <li><a href="purchase.html">입고 관리 (발주)</a></li>
-                <li><a href="sales.html">수주 관리 (출고)</a></li> <li><a href="stock.html">재고 관리</a></li>
+                <li><a href="sales.html">수주 관리 (출고)</a></li>
+                <li><a href="stock.html">재고 관리</a></li>
                 <li><a href="reports.html">리포트</a></li>
                 <li><a href="returns.html">반품/환불 관리</a></li>
             </ul>
@@ -23,13 +24,96 @@
             <h1>기준정보 관리</h1>
 
             <div class="tabs">
-                <button class="tab-link active" data-tab="tab-products">상품 (Products)</button>
-                <button class="tab-link" data-tab="tab-partners">거래처 (Partners)</button>
-                <button class="tab-link" data-tab="tab-warehouses">창고 (Warehouses)</button>
-                <button class="tab-link" data-tab="tab-locations">로케이션 (Locations)</button>
+                <button class="tab-link active" data-tab="tab-warehouses">1. 창고 관리 (Warehouses)</button>
+                <button class="tab-link" data-tab="tab-locations">2. 로케이션 관리 (Locations)</button>
+                <button class="tab-link" data-tab="tab-products">3. 상품 관리 (Products)</button>
+                <button class="tab-link" data-tab="tab-partners">4. 거래처 관리 (Partners)</button>
             </div>
 
-            <div id="tab-products" class="tab-content active">
+            <div id="tab-warehouses" class="tab-content active">
+                <div class="toolbar">
+                    <button class="btn-primary" onclick="openModal('warehouseModal')">+ 신규 창고 등록</button>
+                </div>
+                <h3>창고 목록 (Tbl_Warehouses)</h3>
+                <div class="table-wrapper">
+                    <table class="sortable-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable-header">창고 코드 (PK)</th>
+                                <th class="sortable-header">창고명</th>
+                                <th class="sortable-header">유형</th>
+                                <th class="sortable-header">사용 여부</th>
+                                <th>관리</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>WH-01</td>
+                                <td>제1 물류센터 (김포)</td>
+                                <td>메인 창고</td>
+                                <td>사용</td>
+                                <td><button>수정</button></td>
+                            </tr>
+                             <tr>
+                                <td>WH-02</td>
+                                <td>반품 전용 창고</td>
+                                <td>반품/폐기</td>
+                                <td>사용</td>
+                                <td><button>수정</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-locations" class="tab-content">
+                <div class="toolbar">
+                    <div class="filter-group">
+                        <label>창고 필터:</label>
+                        <select id="wh-select-filter">
+                            <option value="all">전체 창고</option>
+                            <option value="WH-01">제1 물류센터</option>
+                            <option value="WH-02">반품 창고</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary" onclick="openModal('locationModal')">+ 신규 로케이션 등록</button>
+                </div>
+                <h3>로케이션 목록 (Tbl_Locations)</h3>
+                <p class="description">
+                    * 코드 체계: <strong>[창고]-[구역]-[랙]-[단]</strong> (예: WH01-A-01-01)
+                </p>
+                <div class="table-wrapper">
+                       <table class="sortable-table">
+                            <thead>
+                                <tr>
+                                    <th class="sortable-header">로케이션 코드 (PK)</th>
+                                    <th class="sortable-header">소속 창고 (FK)</th>
+                                    <th class="sortable-header">구역-랙-단</th>
+                                    <th class="sortable-header">설명</th>
+                                    <th class="sortable-header">적재 가능</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr> 
+                                    <td>WH01-A-01-01</td> 
+                                    <td>WH-01</td> 
+                                    <td>A-01-01</td> 
+                                    <td>A구역 1번 랙 1단</td> 
+                                    <td>Y</td> 
+                                </tr>
+                                <tr> 
+                                    <td>WH01-A-01-02</td> 
+                                    <td>WH-01</td> 
+                                    <td>A-01-02</td> 
+                                    <td>A구역 1번 랙 2단</td> 
+                                    <td>Y</td> 
+                                </tr>
+                            </tbody>
+                       </table>
+                 </div>
+            </div>
+
+            <div id="tab-products" class="tab-content">
                 <div class="toolbar"><button class="btn-primary">+ 신규 상품 등록</button></div>
                 <div class="table-wrapper">
                     <table class="sortable-table">
@@ -52,83 +136,92 @@
                 <p>공급처 및 고객사 관리 화면입니다.</p>
             </div>
 
-            <div id="tab-warehouses" class="tab-content">
-                <div class="toolbar">
-                    <button class="btn-primary" onclick="alert('창고 등록 모달 오픈')">+ 신규 창고 등록</button>
-                </div>
-                <h3>창고 목록 (Tbl_Warehouses)</h3>
-                <div class="table-wrapper">
-                    <table class="sortable-table">
-                        <thead>
-                            <tr>
-                                <th class="sortable-header">창고 코드 (PK)</th>
-                                <th class="sortable-header">창고명</th>
-                                <th class="sortable-header">유형</th>
-                                <th class="sortable-header">사용 여부</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>WH-01</td>
-                                <td>제1 물류센터 (김포)</td>
-                                <td>메인 창고</td>
-                                <td>사용</td>
-                            </tr>
-                             <tr>
-                                <td>WH-02</td>
-                                <td>반품 전용 창고</td>
-                                <td>반품/폐기</td>
-                                <td>사용</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="tab-locations" class="tab-content">
-                <div class="toolbar">
-                    <div class="filter-group">
-                        <label>창고 선택:</label>
-                        <select id="wh-select-filter">
-                            <option value="all">전체 창고</option>
-                            <option value="WH-01">제1 물류센터</option>
-                            <option value="WH-02">반품 창고</option>
-                        </select>
-                    </div>
-                    <button class="btn-primary">+ 신규 로케이션 등록</button>
-                </div>
-                <h3>로케이션 목록 (Tbl_Locations)</h3>
-                <p class="description">코드 체계: [창고코드]-[랙]-[단] (예: WH01-A-01)</p>
-                <div class="table-wrapper">
-                       <table class="sortable-table">
-                            <thead>
-                                <tr>
-                                    <th class="sortable-header">로케이션 코드 (PK)</th>
-                                    <th class="sortable-header">소속 창고 (FK)</th>
-                                    <th class="sortable-header">설명</th>
-                                    <th class="sortable-header">적재 가능 여부</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr> 
-                                    <td>WH01-A-01</td> 
-                                    <td>WH-01</td> 
-                                    <td>A구역 1번 랙 1단</td> 
-                                    <td>Y</td> 
-                                </tr>
-                                <tr> 
-                                    <td>WH01-A-02</td> 
-                                    <td>WH-01</td> 
-                                    <td>A구역 1번 랙 2단</td> 
-                                    <td>Y</td> 
-                                </tr>
-                            </tbody>
-                       </table>
-                 </div>
-            </div>
-
         </main>
     </div>
+
+    <div id="warehouseModal" class="modal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h2>신규 창고 등록</h2>
+                <span class="close" onclick="closeModal('warehouseModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>창고 코드 (ID):</label>
+                    <input type="text" placeholder="예: WH-03">
+                </div>
+                <div class="form-group">
+                    <label>창고명:</label>
+                    <input type="text" placeholder="예: 인천 제2센터">
+                </div>
+                <div class="form-group">
+                    <label>창고 유형:</label>
+                    <select>
+                        <option value="MAIN">일반 물류 창고</option>
+                        <option value="RETURN">반품/불량 창고</option>
+                        <option value="SHOWROOM">매장/쇼룸</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>주소/위치:</label>
+                    <input type="text" placeholder="주소 입력...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal('warehouseModal')">취소</button>
+                <button class="btn-primary">등록 확정</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="locationModal" class="modal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h2>신규 로케이션 등록</h2>
+                <span class="close" onclick="closeModal('locationModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:0.9em; color:#666; margin-bottom:15px;">
+                    * 창고 내 구역(Zone), 랙(Rack), 단(Shelf)을 정의합니다.
+                </p>
+                
+                <div class="form-group">
+                    <label>소속 창고 (Parent Warehouse):</label>
+                    <select>
+                        <option value="WH-01">제1 물류센터 (WH-01)</option>
+                        <option value="WH-02">반품 창고 (WH-02)</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 10px; align-items: flex-end;">
+                    <div class="form-group" style="flex:1;">
+                        <label>구역 (Zone):</label>
+                        <input type="text" placeholder="A" style="text-align:center;">
+                    </div>
+                    <span style="padding-bottom:10px;">-</span>
+                    <div class="form-group" style="flex:1;">
+                        <label>랙 (Rack):</label>
+                        <input type="number" placeholder="01" style="text-align:center;">
+                    </div>
+                    <span style="padding-bottom:10px;">-</span>
+                    <div class="form-group" style="flex:1;">
+                        <label>단 (Shelf):</label>
+                        <input type="number" placeholder="01" style="text-align:center;">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>설명 (Description):</label>
+                    <input type="text" placeholder="예: 소형 상품 적재 구역">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal('locationModal')">취소</button>
+                <button class="btn-primary">등록 확정</button>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script> 
     <script src="sort-table.js"></script>
     <script>
