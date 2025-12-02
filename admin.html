@@ -37,9 +37,7 @@
                 </div>
                 <div class="table-wrapper">
                     <table class="sortable-table">
-                        <thead>
-                            <tr><th>SKU</th><th>상품명</th><th>카테고리</th><th>안전재고</th><th>관리</th></tr>
-                        </thead>
+                        <thead><tr><th>SKU</th><th>상품명</th><th>카테고리</th><th>안전재고</th><th>관리</th></tr></thead>
                         <tbody id="product-tbody"></tbody>
                     </table>
                 </div>
@@ -51,9 +49,7 @@
                 </div>
                 <div class="table-wrapper">
                     <table class="sortable-table">
-                        <thead>
-                            <tr><th>ID</th><th>거래처명</th><th>유형</th><th>담당자</th><th>관리</th></tr>
-                        </thead>
+                        <thead><tr><th>ID</th><th>거래처명</th><th>유형</th><th>담당자</th><th>관리</th></tr></thead>
                         <tbody id="partner-tbody"></tbody>
                     </table>
                 </div>
@@ -65,9 +61,7 @@
                 </div>
                 <div class="table-wrapper">
                     <table class="sortable-table">
-                        <thead>
-                            <tr><th>ID</th><th>창고명</th><th>유형</th><th>관리</th></tr>
-                        </thead>
+                        <thead><tr><th>ID</th><th>창고명</th><th>유형</th><th>관리</th></tr></thead>
                         <tbody id="warehouse-tbody"></tbody>
                     </table>
                 </div>
@@ -79,9 +73,7 @@
                 </div>
                 <div class="table-wrapper">
                     <table class="sortable-table">
-                        <thead>
-                            <tr><th>ID</th><th>소속 창고</th><th>설명</th><th>관리</th></tr>
-                        </thead>
+                        <thead><tr><th>ID</th><th>소속 창고</th><th>설명</th><th>관리</th></tr></thead>
                         <tbody id="location-tbody"></tbody>
                     </table>
                 </div>
@@ -93,11 +85,10 @@
         <div class="modal-content modal-sm">
             <div class="modal-header"><h2 id="prod-modal-title">상품 정보</h2><span class="close" onclick="closeModal('productModal')">&times;</span></div>
             <div class="modal-body">
-                <input type="hidden" id="prod-mode"> <div class="form-group"><label>SKU (고유코드)</label><input type="text" id="prod-sku"></div>
+                <input type="hidden" id="prod-mode">
+                <div class="form-group"><label>SKU (고유코드)</label><input type="text" id="prod-sku"></div>
                 <div class="form-group"><label>상품명</label><input type="text" id="prod-name"></div>
-                <div class="form-group"><label>카테고리</label>
-                    <select id="prod-cat"><option value="사료">사료</option><option value="간식/캔">간식/캔</option><option value="영양제">영양제</option><option value="용품">용품</option></select>
-                </div>
+                <div class="form-group"><label>카테고리</label><select id="prod-cat"><option value="사료">사료</option><option value="간식/캔">간식/캔</option><option value="용품">용품</option></select></div>
                 <div class="form-group"><label>안전재고</label><input type="number" id="prod-safe"></div>
             </div>
             <div class="modal-footer"><button class="btn-primary" onclick="saveProduct()">저장</button></div>
@@ -137,9 +128,7 @@
             <div class="modal-body">
                 <input type="hidden" id="loc-mode">
                 <div class="form-group"><label>로케이션 ID</label><input type="text" id="loc-id"></div>
-                <div class="form-group"><label>소속 창고</label>
-                    <select id="loc-wh"><option value="WH-01">제1 물류센터</option><option value="WH-02">반품 센터</option></select>
-                </div>
+                <div class="form-group"><label>소속 창고</label><select id="loc-wh"><option value="WH-01">제1 물류센터</option><option value="WH-02">반품 센터</option></select></div>
                 <div class="form-group"><label>설명</label><input type="text" id="loc-desc"></div>
             </div>
             <div class="modal-footer"><button class="btn-primary" onclick="saveLocation()">저장</button></div>
