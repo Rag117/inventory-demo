@@ -486,3 +486,243 @@ function openReturnProcessModal(id) {
     document.getElementById('proc-ret-id').value = id;
     openModal('returnProcessModal');
 }
+
+/* ==========================================================================
+   [추가] 관리자(Admin) 페이지 전용 로직
+   ========================================================================== */
+
+function renderAdminPage() {
+    renderProducts();
+    renderPartners();
+    renderWarehouses();
+    renderLocations();
+}
+
+// --- 1. 상품 관리 (Products) ---
+function renderProducts() {
+    const list = JSON.parse(localStorage.getItem(DB_PRODUCTS)) || [];
+    const tbody = document.getElementById('product-tbody');
+    if(!tbody) return;
+    
+    tbody.innerHTML = list.map(p => `
+        <tr>
+            <td>${p.sku}</td><td>${p.name}</td><td>${p.category}</td><td>${p.safetyStock}</td>
+            <td><button onclick="openProductModal('EDIT', '${p.sku}')">수정</button></td>
+        </tr>
+    `).join('');
+}
+
+function openProductModal(mode, sku = '') {
+    document.getElementById('prod-mode').value = mode;
+    const title = document.getElementById('prod-modal-title');
+    
+    if (mode === 'EDIT') {
+        title.innerText = '상품 수정';
+        const list = JSON.parse(localStorage.getItem(DB_PRODUCTS)) || [];
+        const target = list.find(p => p.sku === sku);
+        if(target) {
+            document.getElementById('prod-sku').value = target.sku;
+            document.getElementById('prod-sku').readOnly = true; // PK 수정 불가
+            document.getElementById('prod-name').value = target.name;
+            document.getElementById('prod-cat').value = target.category;
+            document.getElementById('prod-safe').value = target.safetyStock;
+        }
+    } else {
+        title.innerText = '신규 상품 등록';
+        document.getElementById('prod-sku').value = '';
+        document.getElementById('prod-sku').readOnly = false;
+        document.getElementById('prod-name').value = '';
+        document.getElementById('prod-safe').value = 50;
+    }
+    openModal('productModal');
+}
+
+function saveProduct() {
+    const mode = document.getElementById('prod-mode').value;
+    const sku = document.getElementById('prod-sku').value;
+    const name = document.getElementById('prod-name').value;
+    const cat = document.getElementById('prod-cat').value;
+    const safe = document.getElementById('prod-safe').value;
+
+    if(!sku || !name) return alert('필수값을 입력하세요.');
+
+    let list = JSON.parse(localStorage.getItem(DB_PRODUCTS)) || [];
+    
+    if (mode === 'NEW') {
+        if(list.find(p => p.sku === sku)) return alert('이미 존재하는 SKU입니다.');
+        list.push({ sku, name, category: cat, safetyStock: safe });
+    } else {
+        const idx = list.findIndex(p => p.sku === sku);
+        if(idx > -1) list[idx] = { sku, name, category: cat, safetyStock: safe };
+    }
+
+    localStorage.setItem(DB_PRODUCTS, JSON.stringify(list));
+    alert('저장되었습니다.');
+    closeModal('productModal');
+    renderProducts();
+}
+
+
+// --- 2. 거래처 관리 (Partners) ---
+function renderPartners() {
+    const list = JSON.parse(localStorage.getItem(DB_PARTNERS)) || [];
+    const tbody = document.getElementById('partner-tbody');
+    if(!tbody) return;
+
+    tbody.innerHTML = list.map(p => `
+        <tr>
+            <td>${p.id}</td><td>${p.name}</td><td>${p.type}</td><td>${p.manager || '-'}</td>
+            <td><button onclick="openPartnerModal('EDIT', '${p.id}')">수정</button></td>
+        </tr>
+    `).join('');
+}
+
+function openPartnerModal(mode, id = '') {
+    document.getElementById('part-mode').value = mode;
+    if(mode === 'EDIT') {
+        const list = JSON.parse(localStorage.getItem(DB_PARTNERS)) || [];
+        const target = list.find(p => p.id === id);
+        if(target) {
+            document.getElementById('part-id').value = target.id;
+            document.getElementById('part-id').readOnly = true;
+            document.getElementById('part-name').value = target.name;
+            document.getElementById('part-type').value = target.type;
+            document.getElementById('part-manager').value = target.manager || '';
+        }
+    } else {
+        document.getElementById('part-id').value = '';
+        document.getElementById('part-id').readOnly = false;
+        document.getElementById('part-name').value = '';
+        document.getElementById('part-manager').value = '';
+    }
+    openModal('partnerModal');
+}
+
+function savePartner() {
+    const mode = document.getElementById('part-mode').value;
+    const id = document.getElementById('part-id').value;
+    const name = document.getElementById('part-name').value;
+    const type = document.getElementById('part-type').value;
+    const manager = document.getElementById('part-manager').value;
+
+    if(!id || !name) return alert('필수 정보를 입력하세요.');
+
+    let list = JSON.parse(localStorage.getItem(DB_PARTNERS)) || [];
+    if(mode === 'NEW') {
+        if(list.find(p => p.id === id)) return alert('중복된 ID입니다.');
+        list.push({ id, name, type, manager });
+    } else {
+        const idx = list.findIndex(p => p.id === id);
+        if(idx > -1) list[idx] = { id, name, type, manager };
+    }
+    localStorage.setItem(DB_PARTNERS, JSON.stringify(list));
+    alert('저장되었습니다.');
+    closeModal('partnerModal');
+    renderPartners();
+}
+
+
+// --- 3. 창고 관리 (Warehouses) ---
+function renderWarehouses() {
+    const list = JSON.parse(localStorage.getItem(DB_WAREHOUSES)) || [];
+    const tbody = document.getElementById('warehouse-tbody');
+    if(!tbody) return;
+    tbody.innerHTML = list.map(w => `
+        <tr><td>${w.id}</td><td>${w.name}</td><td>${w.type}</td>
+        <td><button onclick="openWarehouseModal('EDIT', '${w.id}')">수정</button></td></tr>
+    `).join('');
+}
+
+function openWarehouseModal(mode, id='') {
+    document.getElementById('wh-mode').value = mode;
+    if(mode === 'EDIT') {
+        const list = JSON.parse(localStorage.getItem(DB_WAREHOUSES)) || [];
+        const target = list.find(w => w.id === id);
+        if(target) {
+            document.getElementById('wh-id').value = target.id;
+            document.getElementById('wh-id').readOnly = true;
+            document.getElementById('wh-name').value = target.name;
+            document.getElementById('wh-type').value = target.type;
+        }
+    } else {
+        document.getElementById('wh-id').value = '';
+        document.getElementById('wh-id').readOnly = false;
+        document.getElementById('wh-name').value = '';
+    }
+    openModal('warehouseModal');
+}
+
+function saveWarehouse() {
+    const mode = document.getElementById('wh-mode').value;
+    const id = document.getElementById('wh-id').value;
+    const name = document.getElementById('wh-name').value;
+    const type = document.getElementById('wh-type').value;
+    
+    if(!id) return alert('ID를 입력하세요.');
+
+    let list = JSON.parse(localStorage.getItem(DB_WAREHOUSES)) || [];
+    if(mode === 'NEW') {
+        if(list.find(w => w.id === id)) return alert('중복 ID');
+        list.push({ id, name, type });
+    } else {
+        const idx = list.findIndex(w => w.id === id);
+        if(idx > -1) list[idx] = { id, name, type };
+    }
+    localStorage.setItem(DB_WAREHOUSES, JSON.stringify(list));
+    alert('저장되었습니다.');
+    closeModal('warehouseModal');
+    renderWarehouses();
+}
+
+
+// --- 4. 로케이션 관리 (Locations) ---
+function renderLocations() {
+    const list = JSON.parse(localStorage.getItem(DB_LOCATIONS)) || [];
+    const tbody = document.getElementById('location-tbody');
+    if(!tbody) return;
+    tbody.innerHTML = list.map(l => `
+        <tr><td>${l.id}</td><td>${l.whId}</td><td>${l.desc}</td>
+        <td><button onclick="openLocationModal('EDIT', '${l.id}')">수정</button></td></tr>
+    `).join('');
+}
+
+function openLocationModal(mode, id='') {
+    document.getElementById('loc-mode').value = mode;
+    if(mode === 'EDIT') {
+        const list = JSON.parse(localStorage.getItem(DB_LOCATIONS)) || [];
+        const target = list.find(l => l.id === id);
+        if(target) {
+            document.getElementById('loc-id').value = target.id;
+            document.getElementById('loc-id').readOnly = true;
+            document.getElementById('loc-wh').value = target.whId;
+            document.getElementById('loc-desc').value = target.desc;
+        }
+    } else {
+        document.getElementById('loc-id').value = '';
+        document.getElementById('loc-id').readOnly = false;
+        document.getElementById('loc-desc').value = '';
+    }
+    openModal('locationModal');
+}
+
+function saveLocation() {
+    const mode = document.getElementById('loc-mode').value;
+    const id = document.getElementById('loc-id').value;
+    const whId = document.getElementById('loc-wh').value;
+    const desc = document.getElementById('loc-desc').value;
+
+    if(!id) return alert('ID 입력 필요');
+    let list = JSON.parse(localStorage.getItem(DB_LOCATIONS)) || [];
+    
+    if(mode === 'NEW') {
+        if(list.find(l => l.id === id)) return alert('중복 ID');
+        list.push({ id, whId, desc });
+    } else {
+        const idx = list.findIndex(l => l.id === id);
+        if(idx > -1) list[idx] = { id, whId, desc };
+    }
+    localStorage.setItem(DB_LOCATIONS, JSON.stringify(list));
+    alert('저장되었습니다.');
+    closeModal('locationModal');
+    renderLocations();
+}
