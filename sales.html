@@ -27,12 +27,13 @@
             <div class="table-wrapper">
                 <table class="sortable-table" id="sales-table">
                     <thead><tr><th>주문번호</th><th>고객사</th><th>상품명</th><th>수량</th><th>상태/관리</th></tr></thead>
-                    <tbody></tbody>
+                    <tbody><!-- JS Render --></tbody>
                 </table>
             </div>
         </main>
     </div>
 
+    <!-- 신규 수주 모달 -->
     <div id="salesRegModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -42,6 +43,7 @@
             <div class="modal-body">
                 <div class="form-group">
                     <label>고객사 선택 (기준정보 연동)</label>
+                    <!-- [중요] input이 아니라 select여야 함 -->
                     <select id="so-customer" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
                         <option value="">로딩 중...</option>
                     </select>
@@ -52,7 +54,7 @@
                 </div>
                 <div class="form-group">
                     <label>수량</label>
-                    <input type="number" id="so-qty">
+                    <input type="number" id="so-qty" value="1">
                 </div>
             </div>
             <div class="modal-footer">
@@ -61,6 +63,7 @@
         </div>
     </div>
 
+    <!-- 출고 처리 모달 -->
     <div id="shipmentModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>출고 처리 (재고 차감)</h2><span class="close" onclick="closeModal('shipmentModal')">&times;</span></div><div class="modal-body"><input type="hidden" id="ship-so-id"><input type="hidden" id="ship-sku-hidden"><input type="hidden" id="ship-name-hidden"><div class="form-group"><label>요청 수량</label><input type="text" id="ship-req-qty" readonly style="background:#F3F4F6;"></div><div class="form-group"><label>출고 Lot 선택</label><select id="ship-lot-select"></select></div></div><div class="modal-footer"><button class="btn-primary" onclick="confirmShipment()">출고 확정</button></div></div></div>
 
     <script src="sort-table.js"></script>

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   멍밥 ERP 통합 엔진 (app.js) - Final Fix Version
+   멍밥 ERP 통합 엔진 (app.js) - Sales Fix Version
    ========================================================================== */
 
 // --- 1. 데이터베이스 키 ---
@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setupCommonUI();    
     initializeTabs();   
 
-    // 페이지별 렌더링 라우터
     if (document.getElementById('product-tbody')) renderAdminPage(); 
     if (document.getElementById('inventoryChart')) renderDashboard(); 
     if (document.getElementById('purchase-table')) renderPurchasePage(); 
@@ -56,18 +55,9 @@ function initSystemData() {
         { id: 'C-002', name: '행복한 펫샵', type: '고객사', manager: '손흥민' }
     ]));
 
-    // 3) 창고
-    localStorage.setItem(DB_WAREHOUSES, JSON.stringify([
-        { id: 'WH-01', name: '제1 물류센터', type: '일반' },
-        { id: 'WH-02', name: '반품 센터', type: '반품' }
-    ]));
-
-    // 4) 로케이션
-    localStorage.setItem(DB_LOCATIONS, JSON.stringify([
-        { id: 'WH01-A-01', whId: 'WH-01', desc: 'A구역' },
-        { id: 'WH01-B-01', whId: 'WH-01', desc: 'B구역' },
-        { id: 'WH02-R-01', whId: 'WH-02', desc: '반품 대기존' }
-    ]));
+    // 3) 창고 & 로케이션
+    localStorage.setItem(DB_WAREHOUSES, JSON.stringify([{ id: 'WH-01', name: '제1 물류센터', type: '일반' }, { id: 'WH-02', name: '반품 센터', type: '반품' }]));
+    localStorage.setItem(DB_LOCATIONS, JSON.stringify([{ id: 'WH01-A-01', whId: 'WH-01', desc: 'A구역' }, { id: 'WH01-B-01', whId: 'WH-01', desc: 'B구역' }, { id: 'WH02-R-01', whId: 'WH-02', desc: '반품 대기존' }]));
 
     // 5) 초기 재고
     const stock = [
@@ -104,7 +94,7 @@ function saveProduct() { const sku=document.getElementById('prod-sku').value, na
 
 function renderPartners(){ const l=JSON.parse(localStorage.getItem(DB_PARTNERS))||[]; document.getElementById('partner-tbody').innerHTML=l.map(p=>`<tr><td>${p.id}</td><td>${p.name}</td><td>${p.type}</td><td>${p.manager}</td><td><button onclick="openPartnerModal('EDIT','${p.id}')">수정</button> <button class="btn-danger" onclick="deleteMasterData('${DB_PARTNERS}','id','${p.id}')">삭제</button></td></tr>`).join(''); }
 function openPartnerModal(m,i=''){document.getElementById('part-mode').value=m; if(m==='EDIT'){const t=(JSON.parse(localStorage.getItem(DB_PARTNERS))||[]).find(p=>p.id===i); if(t){document.getElementById('part-id').value=t.id; document.getElementById('part-id').readOnly=true; document.getElementById('part-name').value=t.name;}}else{document.getElementById('part-id').value='';document.getElementById('part-id').readOnly=false;document.getElementById('part-name').value='';} openModal('partnerModal');}
-function savePartner(){const i=document.getElementById('part-id').value,n=document.getElementById('part-name').value,t=document.getElementById('part-type').value,m=document.getElementById('part-manager').value,md=document.getElementById('part-mode').value; if(!i)return alert('ID필수'); let l=JSON.parse(localStorage.getItem(DB_PARTNERS))||[]; if(md==='NEW'){l.push({id:i,name:n,type:t,manager:m});}else{const idx=l.findIndex(p=>p.id===i); if(idx>-1)l[idx]={id:i,name:n,type:t,manager:m};} localStorage.setItem(DB_PARTNERS, JSON.stringify(l)); closeModal('partnerModal'); renderPartners();}
+function savePartner(){const i=document.getElementById('part-id').value,n=document.getElementById('part-name').value,t=document.getElementById('part-type').value,m=document.getElementById('part-manager').value,md=document.getElementById('part-mode').value; if(!i)return alert('ID필수'); let l=JSON.parse(localStorage.getItem(DB_PARTNERS))||[]; if(md==='NEW'){l.push({id:i,name:n,type:t,manager:m});}else{const idx=l.findIndex(p=>p.id===i); if(idx>-1)l[idx]={id:i,name:n,type:t,manager:m};} localStorage.setItem(DB_PARTNERS, JSON.stringify(l)); closeModal('partnerModal'); renderPartners(); }
 function renderWarehouses(){ const l=JSON.parse(localStorage.getItem(DB_WAREHOUSES))||[]; document.getElementById('warehouse-tbody').innerHTML=l.map(w=>`<tr><td>${w.id}</td><td>${w.name}</td><td>${w.type}</td><td><button onclick="openWarehouseModal('EDIT','${w.id}')">수정</button> <button class="btn-danger" onclick="deleteMasterData('${DB_WAREHOUSES}','id','${w.id}')">삭제</button></td></tr>`).join(''); }
 function openWarehouseModal(m,i=''){document.getElementById('wh-mode').value=m; if(m==='EDIT'){const t=(JSON.parse(localStorage.getItem(DB_WAREHOUSES))||[]).find(w=>w.id===i); if(t){document.getElementById('wh-id').value=t.id;document.getElementById('wh-id').readOnly=true;document.getElementById('wh-name').value=t.name;}}else{document.getElementById('wh-id').value='';document.getElementById('wh-id').readOnly=false;document.getElementById('wh-name').value='';} openModal('warehouseModal');}
 function saveWarehouse(){const i=document.getElementById('wh-id').value,n=document.getElementById('wh-name').value,t=document.getElementById('wh-type').value,md=document.getElementById('wh-mode').value; if(!i)return alert('ID필수'); let l=JSON.parse(localStorage.getItem(DB_WAREHOUSES))||[]; if(md==='NEW'){l.push({id:i,name:n,type:t});}else{const idx=l.findIndex(w=>w.id===i);if(idx>-1)l[idx]={id:i,name:n,type:t};} localStorage.setItem(DB_WAREHOUSES, JSON.stringify(l)); closeModal('warehouseModal'); renderWarehouses(); }
@@ -247,7 +237,6 @@ function renderReportPage() {
 }
 
 // --- [입고/수주/반품] 렌더링 (Select 적용) ---
-// [유틸] 거래처 이름 찾기
 function getPartnerName(id) {
     const partners = JSON.parse(localStorage.getItem(DB_PARTNERS)) || [];
     const found = partners.find(p => p.id === id);
@@ -284,9 +273,13 @@ function processPurchaseReceive(poId) {
     po.status='Received'; localStorage.setItem(DB_PURCHASE, JSON.stringify(list)); alert('입고완료'); renderPurchasePage();
 }
 
+// [수주 관리 렌더링 함수] - 여기가 비어 보였던 원인일 수 있음
 function renderSalesPage() {
     const list = JSON.parse(localStorage.getItem(DB_SALES)) || [];
     const tbody = document.querySelector('#sales-table tbody');
+    
+    if(!tbody) return; // 테이블이 없으면 중단
+
     tbody.innerHTML = list.map(so => {
         const p = getProductInfo(so.sku);
         const customerName = getPartnerName(so.customer) || so.customer;
@@ -294,6 +287,8 @@ function renderSalesPage() {
         return `<tr><td>${so.id}</td><td>${customerName}</td><td>${p.name}</td><td>${so.qty}</td>
         <td>${so.status==='Ordered'?`<button class="btn-primary" onclick="openShipmentModal('${so.id}')">출고처리</button>`:'<span class="status-done">출고완료</span>'} <button class="btn-danger" style="margin-left:5px" onclick="deleteTransaction('${DB_SALES}','${so.id}')">삭제</button></td></tr>`;
     }).join('');
+    
+    // 페이지 로드 시에도 옵션을 미리 채워둠
     populateProductOptions('so-sku-select');
     populatePartnerOptions('so-customer', '고객사');
 }
@@ -311,25 +306,11 @@ function openShipmentModal(soId) { const so=JSON.parse(localStorage.getItem(DB_S
 function confirmShipment() { const soId=document.getElementById('ship-so-id').value, lotId=document.getElementById('ship-lot-select').value, sku=document.getElementById('ship-sku-hidden').value, qty=parseInt(document.getElementById('ship-req-qty').value); if(updateStock('OUT', {sku, lotId, qty, refType:'수주출고', refId:soId})) { let list=JSON.parse(localStorage.getItem(DB_SALES)); let so=list.find(s=>s.id===soId); so.status='Shipped'; localStorage.setItem(DB_SALES, JSON.stringify(list)); alert('출고완료'); closeModal('shipmentModal'); renderSalesPage(); } }
 
 function renderReturnsPage() { const list = JSON.parse(localStorage.getItem(DB_RETURNS)) || []; document.querySelector('#return-table tbody').innerHTML = list.map(r => { const p = getProductInfo(r.sku); return `<tr><td>${r.id}</td><td>${r.returnDate}</td><td>${p.name}</td><td>${r.qty}</td><td>${r.customer||'-'}</td><td>${r.status==='Requested'?'<span class="status-wait">승인대기</span>':(r.status==='Restocked'?'<span class="status-done">재입고완료</span>':'<span class="status-danger">폐기완료</span>')}</td><td>${r.status==='Requested'?`<button class="btn-primary" onclick="openReturnProcessModal('${r.id}')">처리</button>`:`<button onclick="openReturnDetailModal('${r.id}')">상세</button>`}</td></tr>`; }).join(''); populateProductOptions('ret-sku-select'); }
-function registerReturn() { 
-    // [중요] ID 일치 확인
-    const skuSel=document.getElementById('ret-sku-select');
-    const qty=document.getElementById('ret-qty').value;
-    const reason=document.getElementById('ret-reason').value;
-    const customer=document.getElementById('ret-customer').value; // 이 부분이 <select id="ret-customer">에서 값을 가져와야 함
-    const orgDate=document.getElementById('ret-org-date').value;
-    
-    if(!skuSel.value||!qty||!orgDate) return alert('필수정보 누락');
-    
-    const list=JSON.parse(localStorage.getItem(DB_RETURNS))||[]; 
-    list.push({id:'RT-'+Date.now(), returnDate:new Date().toISOString().split('T')[0], orgDate:orgDate, customer:customer, sku:skuSel.value, qty:parseInt(qty), reason:reason, status:'Requested', processDate:null, actionType:null}); 
-    localStorage.setItem(DB_RETURNS, JSON.stringify(list)); alert('접수완료'); closeModal('returnRegModal'); renderReturnsPage(); 
-}
+function registerReturn() { const skuSel=document.getElementById('ret-sku-select'), qty=document.getElementById('ret-qty').value, reason=document.getElementById('ret-reason').value, customer=document.getElementById('ret-customer').value, orgDate=document.getElementById('ret-org-date').value; if(!skuSel.value||!qty||!orgDate) return alert('필수정보 누락'); const list=JSON.parse(localStorage.getItem(DB_RETURNS))||[]; list.push({id:'RT-'+Date.now(), returnDate:new Date().toISOString().split('T')[0], orgDate:orgDate, customer:customer, sku:skuSel.value, qty:parseInt(qty), reason:reason, status:'Requested', processDate:null, actionType:null}); localStorage.setItem(DB_RETURNS, JSON.stringify(list)); alert('접수완료'); closeModal('returnRegModal'); renderReturnsPage(); }
 function completeReturnProcess() { const id=document.getElementById('proc-ret-id').value, action=document.getElementById('proc-action').value, procDate=document.getElementById('proc-date').value; if(!procDate)return alert('날짜입력'); let list=JSON.parse(localStorage.getItem(DB_RETURNS))||[], item=list.find(r=>r.id===id); item.processDate=procDate; item.actionType=action; if(action==='RESTOCK'){ updateStock('IN', {sku:item.sku, qty:item.qty, lotId:'LOT-RET-'+item.id, location:'WH02-R-01', refType:'반품재입고', refId:item.id, date:procDate}); item.status='Restocked'; alert('재입고완료'); } else{ item.status='Disposed'; alert('폐기완료'); } localStorage.setItem(DB_RETURNS, JSON.stringify(list)); closeModal('returnProcessModal'); renderReturnsPage(); }
 function openReturnDetailModal(id) { const item=(JSON.parse(localStorage.getItem(DB_RETURNS))||[]).find(r=>r.id===id); const p=getProductInfo(item.sku); const custName = getPartnerName(item.customer) || item.customer; const h=`<p><strong>반품ID:</strong> ${item.id}</p><p><strong>상품:</strong> ${p.name}</p><p><strong>고객:</strong> ${custName}</p><hr><p><strong>접수일:</strong> ${item.returnDate}</p><p><strong>원거래일:</strong> ${item.orgDate}</p><p><strong>처리일:</strong> ${item.processDate||'-'}</p><p><strong>결과:</strong> ${item.status} (${item.actionType||'-'})</p><p><strong>사유:</strong> ${item.reason}</p>`; document.getElementById('detail-content').innerHTML=h; openModal('returnDetailModal'); }
 
 // --- 유틸 ---
-// [신규] 거래처 드롭다운 생성 (type: '공급처' or '고객사')
 function populatePartnerOptions(selectId, type) {
     const el = document.getElementById(selectId);
     if (!el) return;
@@ -341,7 +322,7 @@ function populatePartnerOptions(selectId, type) {
         el.innerHTML = `<option value="">등록된 ${type} 없음</option>`;
     } else {
         el.innerHTML = `<option value="">${type} 선택</option>` + 
-            filtered.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+            filtered.map(p => `<option value="${p.id}">${p.name} (${p.manager})</option>`).join('');
     }
 }
 
@@ -349,7 +330,7 @@ function populateProductOptions(id) { const el=document.getElementById(id); if(e
 function populateLocationOptions(id) { const el=document.getElementById(id); if(el) el.innerHTML='<option value="">로케이션 선택</option>'+(JSON.parse(localStorage.getItem(DB_LOCATIONS))||[]).map(l=>`<option value="${l.id}">${l.id} (${l.desc})</option>`).join(''); }
 function initializeTabs() { document.querySelectorAll('.tab-link').forEach(btn=>{btn.addEventListener('click',(e)=>{const t=e.target.dataset.tab; document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); document.querySelectorAll('.tab-link').forEach(b=>b.classList.remove('active')); document.getElementById(t).classList.add('active'); e.target.classList.add('active');});}); }
 
-// [수정] 모달 열 때 거래처 정보도 갱신
+// [중요] 모달 열 때 거래처 정보도 갱신
 function openModal(id) { 
     if(id==='purchaseModal'){ 
         populateProductOptions('po-sku-select'); 
@@ -358,7 +339,7 @@ function openModal(id) {
     } 
     if(id==='salesRegModal') {
         populateProductOptions('so-sku-select');
-        populatePartnerOptions('so-customer', '고객사'); 
+        populatePartnerOptions('so-customer', '고객사'); // 이 부분이 핵심
     }
     if(id==='returnRegModal') {
         populateProductOptions('ret-sku-select');
