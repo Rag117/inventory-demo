@@ -21,11 +21,9 @@
         </nav>
         <main class="dashboard">
             <h1>입고 관리 (Purchase Inbound)</h1>
-            
             <div class="toolbar">
                 <button class="btn-primary" onclick="openModal('purchaseModal')">+ 신규 입고 등록</button>
             </div>
-
             <div class="table-wrapper">
                 <table class="sortable-table" id="purchase-table">
                     <thead>
@@ -40,7 +38,7 @@
     <div id="purchaseModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>신규 입고(재고) 등록</h2>
+                <h2>신규 입고 등록</h2>
                 <span class="close" onclick="closeModal('purchaseModal')">&times;</span>
             </div>
             <div class="modal-body">
@@ -49,13 +47,12 @@
                     <select id="po-sku-select"></select>
                 </div>
                 <div class="form-group">
-                    <label>적재 로케이션 (위치)</label>
-                    <select id="po-location">
-                        </select>
+                    <label>공급처 선택</label>
+                    <select id="po-partner"></select>
                 </div>
                 <div class="form-group">
-                    <label>공급처</label>
-                    <input type="text" id="po-partner" placeholder="예: (주)튼튼펫푸드">
+                    <label>적재 로케이션 (위치)</label>
+                    <select id="po-location"></select>
                 </div>
                 <div class="form-group">
                     <label>수량</label>

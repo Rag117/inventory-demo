@@ -1,5 +1,5 @@
 /* ==========================================================================
-   멍밥 ERP 통합 엔진 (app.js) - Ledger Fix Version
+   멍밥 ERP 통합 엔진 (app.js) - Partner Select Version
    ========================================================================== */
 
 // --- 1. 데이터베이스 키 ---
@@ -24,7 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('purchase-table')) renderPurchasePage(); 
     if (document.getElementById('sales-table')) renderSalesPage(); 
     if (document.getElementById('current-stock-table')) { loadCurrentStock(); loadStockLedger(); } 
-    // [중요] 리포트 페이지에서도 수불부를 불러오도록 확실하게 처리
     if (document.getElementById('report-sales-tbody')) renderReportPage(); 
     if (document.getElementById('return-table')) renderReturnsPage(); 
 });
@@ -33,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
    3. 데이터 초기화
    ========================================================================== */
 function initSystemData() {
-    if (localStorage.getItem(DB_PRODUCTS)) return; // 데이터 있으면 스킵
+    if (localStorage.getItem(DB_PRODUCTS)) return; 
 
     const today = new Date().toISOString().split('T')[0];
     const expirySoon = new Date(); expirySoon.setDate(new Date().getDate() + 5);
@@ -42,30 +41,41 @@ function initSystemData() {
     const products = [
         { sku: 'SKU-D01', name: '프리미엄 그레인프리 사료 (10kg)', category: '사료', safetyStock: 50 },
         { sku: 'SKU-D02', name: '관절 튼튼 기능성 사료 (5kg)', category: '사료', safetyStock: 30 },
-        { sku: 'SKU-C01', name: '웰니스 고양이 캔 (참치)', category: '캔', safetyStock: 200 },
-        { sku: 'SKU-S01', name: '유기농 캣닢 트릿', category: '간식', safetyStock: 100 },
-        { sku: 'SKU-S02', name: '고양이들이 환장하는 츄르', category: '간식', safetyStock: 20 }
+        { sku: 'SKU-C01', name: '웰니스 고양이 캔 (참치)', category: '간식/캔', safetyStock: 200 },
+        { sku: 'SKU-C02', name: '유기농 캣닢 트릿', category: '간식/캔', safetyStock: 100 },
+        { sku: 'SKU-S01', name: '대형견용 튼튼 리드줄', category: '용품', safetyStock: 20 }
     ];
     localStorage.setItem(DB_PRODUCTS, JSON.stringify(products));
 
-    // 2) 거래처
+    // 2) 거래처 (공급처/고객사 구분 중요)
     localStorage.setItem(DB_PARTNERS, JSON.stringify([
         { id: 'V-001', name: '(주)튼튼펫푸드', type: '공급처', manager: '김철수' },
-        { id: 'C-001', name: '냥이월드', type: '고객사', manager: '박지성' }
+        { id: 'V-002', name: '내추럴멍', type: '공급처', manager: '이영희' },
+        { id: 'C-001', name: '냥이월드', type: '고객사', manager: '박지성' },
+        { id: 'C-002', name: '행복한 펫샵', type: '고객사', manager: '손흥민' }
     ]));
 
-    // 3) 창고 & 로케이션
-    localStorage.setItem(DB_WAREHOUSES, JSON.stringify([{ id: 'WH-01', name: '제1 물류센터', type: '일반' }, { id: 'WH-02', name: '반품 센터', type: '반품' }]));
-    localStorage.setItem(DB_LOCATIONS, JSON.stringify([{ id: 'WH01-A-01', whId: 'WH-01', desc: 'A구역' }, { id: 'WH01-B-01', whId: 'WH-01', desc: 'B구역' }]));
+    // 3) 창고
+    localStorage.setItem(DB_WAREHOUSES, JSON.stringify([
+        { id: 'WH-01', name: '제1 물류센터', type: '일반' },
+        { id: 'WH-02', name: '반품 센터', type: '반품' }
+    ]));
 
-    // 4) 초기 재고 & 수불부
+    // 4) 로케이션
+    localStorage.setItem(DB_LOCATIONS, JSON.stringify([
+        { id: 'WH01-A-01', whId: 'WH-01', desc: 'A구역' },
+        { id: 'WH01-B-01', whId: 'WH-01', desc: 'B구역' },
+        { id: 'WH02-R-01', whId: 'WH-02', desc: '반품 대기존' }
+    ]));
+
+    // 5) 초기 재고
     const stock = [
         { sku: 'SKU-D01', lotId: 'LOT-INIT-01', location: 'WH01-A-01', qty: 60, date: today, expiry: '2025-12-31' },
         { sku: 'SKU-C02', lotId: 'LOT-WARN-01', location: 'WH01-B-01', qty: 80, date: today, expiry: expirySoon.toISOString().split('T')[0] }
     ];
     localStorage.setItem(DB_STOCK, JSON.stringify(stock));
     
-    // 수불부 (초기화 시 change 값 확실하게 넣기)
+    // 수불부
     const ledger = stock.map(s => ({
         date: today, type: '기초재고', sku: s.sku, change: s.qty, refId: 'INIT'
     }));
@@ -80,11 +90,7 @@ function resetSystemData() {
 
 function setupCommonUI() { const dateInputs = document.querySelectorAll('input[type="date"]'); const today = new Date().toISOString().split('T')[0]; dateInputs.forEach(input => { if (!input.value) input.value = today; }); }
 function deleteMasterData(dbKey, idField, idValue) { if (!confirm('삭제하시겠습니까?')) return; let list = JSON.parse(localStorage.getItem(dbKey)) || []; localStorage.setItem(dbKey, JSON.stringify(list.filter(item => item[idField] !== idValue))); location.reload(); }
-function getProductInfo(sku) {
-    const products = JSON.parse(localStorage.getItem(DB_PRODUCTS)) || [];
-    // category가 없으면 '기타' 반환
-    return products.find(p => p.sku === sku) || { name: `(삭제됨: ${sku})`, category: '기타', safetyStock: 0 };
-}
+function getProductInfo(sku) { const products = JSON.parse(localStorage.getItem(DB_PRODUCTS)) || []; return products.find(p => p.sku === sku) || { name: `(삭제됨: ${sku})`, category: '-', safetyStock: 0 }; }
 function deleteTransaction(dbKey, id) { if(!confirm('내역을 삭제하시겠습니까? (재고는 복구되지 않습니다)')) return; let list = JSON.parse(localStorage.getItem(dbKey)) || []; localStorage.setItem(dbKey, JSON.stringify(list.filter(item => item.id !== id))); alert('삭제완료'); location.reload(); }
 
 /* ==========================================================================
@@ -95,10 +101,9 @@ function renderProducts() { const list = JSON.parse(localStorage.getItem(DB_PROD
 function openProductModal(mode, sku='') { document.getElementById('prod-mode').value = mode; if(mode==='EDIT'){ const t = (JSON.parse(localStorage.getItem(DB_PRODUCTS))||[]).find(p=>p.sku===sku); if(t){ document.getElementById('prod-sku').value=t.sku; document.getElementById('prod-sku').readOnly=true; document.getElementById('prod-name').value=t.name; document.getElementById('prod-cat').value=t.category; document.getElementById('prod-safe').value=t.safetyStock; } } else { document.getElementById('prod-sku').value=''; document.getElementById('prod-sku').readOnly=false; document.getElementById('prod-name').value=''; document.getElementById('prod-safe').value=50; } openModal('productModal'); }
 function saveProduct() { const sku=document.getElementById('prod-sku').value, name=document.getElementById('prod-name').value, cat=document.getElementById('prod-cat').value, safe=document.getElementById('prod-safe').value, mode=document.getElementById('prod-mode').value; if(!sku || !name) return alert('필수 입력 누락'); let list = JSON.parse(localStorage.getItem(DB_PRODUCTS)) || []; if(mode==='NEW'){ if(list.find(p=>p.sku===sku)) return alert('중복 SKU'); list.push({sku,name,category:cat,safetyStock:safe}); } else { const idx=list.findIndex(p=>p.sku===sku); if(idx>-1) list[idx]={sku,name,category:cat,safetyStock:safe}; } localStorage.setItem(DB_PRODUCTS, JSON.stringify(list)); closeModal('productModal'); renderProducts(); }
 
-// (기타 Admin 함수들 - 기존 동일)
 function renderPartners(){ const l=JSON.parse(localStorage.getItem(DB_PARTNERS))||[]; document.getElementById('partner-tbody').innerHTML=l.map(p=>`<tr><td>${p.id}</td><td>${p.name}</td><td>${p.type}</td><td>${p.manager}</td><td><button onclick="openPartnerModal('EDIT','${p.id}')">수정</button> <button class="btn-danger" onclick="deleteMasterData('${DB_PARTNERS}','id','${p.id}')">삭제</button></td></tr>`).join(''); }
 function openPartnerModal(m,i=''){document.getElementById('part-mode').value=m; if(m==='EDIT'){const t=(JSON.parse(localStorage.getItem(DB_PARTNERS))||[]).find(p=>p.id===i); if(t){document.getElementById('part-id').value=t.id; document.getElementById('part-id').readOnly=true; document.getElementById('part-name').value=t.name;}}else{document.getElementById('part-id').value='';document.getElementById('part-id').readOnly=false;document.getElementById('part-name').value='';} openModal('partnerModal');}
-function savePartner(){const i=document.getElementById('part-id').value,n=document.getElementById('part-name').value,t=document.getElementById('part-type').value,m=document.getElementById('part-manager').value,md=document.getElementById('part-mode').value; if(!i)return alert('ID필수'); let l=JSON.parse(localStorage.getItem(DB_PARTNERS))||[]; if(md==='NEW'){l.push({id:i,name:n,type:t,manager:m});}else{const idx=l.findIndex(p=>p.id===i); if(idx>-1)l[idx]={id:i,name:n,type:t,manager:m};} localStorage.setItem(DB_PARTNERS, JSON.stringify(l)); closeModal('partnerModal'); renderPartners();}
+function savePartner(){const i=document.getElementById('part-id').value,n=document.getElementById('part-name').value,t=document.getElementById('part-type').value,m=document.getElementById('part-manager').value,md=document.getElementById('part-mode').value; if(!i)return alert('ID필수'); let l=JSON.parse(localStorage.getItem(DB_PARTNERS))||[]; if(md==='NEW'){l.push({id:i,name:n,type:t,manager:m});}else{const idx=l.findIndex(p=>p.id===i); if(idx>-1)l[idx]={id:i,name:n,type:t,manager:m};} localStorage.setItem(DB_PARTNERS, JSON.stringify(l)); closeModal('partnerModal'); renderPartners(); }
 function renderWarehouses(){ const l=JSON.parse(localStorage.getItem(DB_WAREHOUSES))||[]; document.getElementById('warehouse-tbody').innerHTML=l.map(w=>`<tr><td>${w.id}</td><td>${w.name}</td><td>${w.type}</td><td><button onclick="openWarehouseModal('EDIT','${w.id}')">수정</button> <button class="btn-danger" onclick="deleteMasterData('${DB_WAREHOUSES}','id','${w.id}')">삭제</button></td></tr>`).join(''); }
 function openWarehouseModal(m,i=''){document.getElementById('wh-mode').value=m; if(m==='EDIT'){const t=(JSON.parse(localStorage.getItem(DB_WAREHOUSES))||[]).find(w=>w.id===i); if(t){document.getElementById('wh-id').value=t.id;document.getElementById('wh-id').readOnly=true;document.getElementById('wh-name').value=t.name;}}else{document.getElementById('wh-id').value='';document.getElementById('wh-id').readOnly=false;document.getElementById('wh-name').value='';} openModal('warehouseModal');}
 function saveWarehouse(){const i=document.getElementById('wh-id').value,n=document.getElementById('wh-name').value,t=document.getElementById('wh-type').value,md=document.getElementById('wh-mode').value; if(!i)return alert('ID필수'); let l=JSON.parse(localStorage.getItem(DB_WAREHOUSES))||[]; if(md==='NEW'){l.push({id:i,name:n,type:t});}else{const idx=l.findIndex(w=>w.id===i);if(idx>-1)l[idx]={id:i,name:n,type:t};} localStorage.setItem(DB_WAREHOUSES, JSON.stringify(l)); closeModal('warehouseModal'); renderWarehouses(); }
@@ -108,7 +113,7 @@ function saveLocation(){const i=document.getElementById('loc-id').value,w=docume
 
 
 /* ==========================================================================
-   5. 핵심 로직: 재고 트랜잭션 (수불부 통합)
+   5. 핵심 로직: 재고 트랜잭션
    ========================================================================== */
 function updateStock(actionType, data) {
     let stockList = JSON.parse(localStorage.getItem(DB_STOCK)) || [];
@@ -136,7 +141,6 @@ function updateStock(actionType, data) {
         changeQty = -parseInt(data.qty);
     }
 
-    // [중요] 수불부 저장 시 'change' 필드로 통일
     ledgerList.push({ 
         date: today, type: data.refType || (changeQty > 0 ? '입고' : '출고'), 
         sku: data.sku, change: changeQty, refId: data.refId 
@@ -199,7 +203,6 @@ function loadStockLedger() {
     if(!tbody) return;
     const ledgerList = JSON.parse(localStorage.getItem(DB_LEDGER)) || [];
     
-    // [중요] 날짜 필터 요소가 있으면 값 쓰고, 없으면(리포트 페이지 등) 필터 안 함
     const sDateInput = document.getElementById('ledger-start-date');
     const eDateInput = document.getElementById('ledger-end-date');
     const startDate = sDateInput ? sDateInput.value : '';
@@ -208,22 +211,19 @@ function loadStockLedger() {
     let runningBalance = {};
     let html = '';
 
-    // 날짜순 정렬
     ledgerList.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(row => {
         const p = getProductInfo(row.sku);
         if (!runningBalance[row.sku]) runningBalance[row.sku] = 0;
         
-        // [중요] 호환성 처리: 옛날 데이터(inQty/outQty)가 섞여있어도 'change'로 계산
         let actualChange = 0;
         if (row.change !== undefined) {
             actualChange = row.change;
         } else {
-            actualChange = (row.inQty || 0) - (row.outQty || 0); // 옛날 데이터 호환
+            actualChange = (row.inQty || 0) - (row.outQty || 0); 
         }
         
         runningBalance[row.sku] += actualChange;
         
-        // 필터링
         if (startDate && row.date < startDate) return;
         if (endDate && row.date > endDate) return;
 
@@ -242,38 +242,35 @@ function filterStockTable() { loadCurrentStock(); }
 
 // --- [리포트 페이지] ---
 function renderReportPage() {
-    // 1. 매출 내역 (출고 완료 건)
-    const salesList = JSON.parse(localStorage.getItem(DB_SALES)) || [];
-    const salesBody = document.getElementById('report-sales-tbody');
-    if (salesBody) {
-        const shippedSales = salesList.filter(s => s.status === 'Shipped');
-        salesBody.innerHTML = shippedSales.map(s => {
-            const p = getProductInfo(s.sku);
-            return `<tr><td>2025-12-02</td><td>${s.id}</td><td>${p.name}</td><td>${s.qty}</td><td>-</td></tr>`;
-        }).join('');
-    }
-    // 2. 재고 원장 (공용 함수 사용)
     loadStockLedger();
 }
 
-// --- [입고/수주/반품] 렌더링 (삭제 버튼 포함) ---
+// --- [입고/수주/반품] 렌더링 (Select 적용) ---
 function renderPurchasePage() {
     const list = JSON.parse(localStorage.getItem(DB_PURCHASE)) || [];
     const tbody = document.querySelector('#purchase-table tbody');
     tbody.innerHTML = list.map(po => {
         const p = getProductInfo(po.sku);
-        return `<tr><td>${po.id}</td><td>${po.partnerName}</td><td>${p.name}</td><td>${po.qty}</td><td>${po.location||'-'}</td>
+        // 공급처 ID가 저장되어 있으면 이름을 찾아서 표시
+        const partnerName = getPartnerName(po.partnerName) || po.partnerName; 
+        
+        return `<tr><td>${po.id}</td><td>${partnerName}</td><td>${p.name}</td><td>${po.qty}</td><td>${po.location||'-'}</td>
         <td>${po.status==='Ordered'?`<button class="btn-primary" onclick="processPurchaseReceive('${po.id}')">입고확정</button>`:'<span class="status-done">입고완료</span>'} <button class="btn-danger" style="margin-left:5px" onclick="deleteTransaction('${DB_PURCHASE}','${po.id}')">삭제</button></td></tr>`;
     }).join('');
+    // 렌더링 후 드롭다운 갱신
     populateProductOptions('po-sku-select');
+    populatePartnerOptions('po-partner', '공급처');
 }
+
 function registerPurchase() {
     const skuSel=document.getElementById('po-sku-select'), partner=document.getElementById('po-partner').value, location=document.getElementById('po-location').value, qty=document.getElementById('po-qty').value;
-    if(!skuSel.value||!qty||!location) return alert('정보누락');
+    if(!skuSel.value||!qty||!location||!partner) return alert('정보누락');
+    
     const list=JSON.parse(localStorage.getItem(DB_PURCHASE))||[];
     list.push({id:'PO-'+Date.now(), sku:skuSel.value, partnerName:partner, location:location, qty:parseInt(qty), date:new Date().toISOString().split('T')[0], status:'Ordered'});
     localStorage.setItem(DB_PURCHASE, JSON.stringify(list)); alert('등록완료'); closeModal('purchaseModal'); renderPurchasePage();
 }
+
 function processPurchaseReceive(poId) {
     const list=JSON.parse(localStorage.getItem(DB_PURCHASE))||[]; const po=list.find(p=>p.id===poId); if(!po)return;
     const lotId='LOT-'+poId.split('-')[1]; const expiry=new Date(); expiry.setFullYear(expiry.getFullYear()+1);
@@ -286,156 +283,72 @@ function renderSalesPage() {
     const tbody = document.querySelector('#sales-table tbody');
     tbody.innerHTML = list.map(so => {
         const p = getProductInfo(so.sku);
-        return `<tr><td>${so.id}</td><td>${so.customer}</td><td>${p.name}</td><td>${so.qty}</td>
+        const customerName = getPartnerName(so.customer) || so.customer;
+
+        return `<tr><td>${so.id}</td><td>${customerName}</td><td>${p.name}</td><td>${so.qty}</td>
         <td>${so.status==='Ordered'?`<button class="btn-primary" onclick="openShipmentModal('${so.id}')">출고처리</button>`:'<span class="status-done">출고완료</span>'} <button class="btn-danger" style="margin-left:5px" onclick="deleteTransaction('${DB_SALES}','${so.id}')">삭제</button></td></tr>`;
     }).join('');
     populateProductOptions('so-sku-select');
+    populatePartnerOptions('so-customer', '고객사');
 }
-// (Sales 등록/처리, Returns 함수들은 기존과 로직 동일하므로 생략 없이 사용)
-function registerSales() { const skuSel=document.getElementById('so-sku-select'), customer=document.getElementById('so-customer').value, qty=document.getElementById('so-qty').value; if(!skuSel.value||!qty) return alert('정보누락'); const list=JSON.parse(localStorage.getItem(DB_SALES))||[]; list.push({id:'SO-'+Date.now(), sku:skuSel.value, customer:customer, qty:parseInt(qty), status:'Ordered'}); localStorage.setItem(DB_SALES, JSON.stringify(list)); alert('등록완료'); closeModal('salesRegModal'); renderSalesPage(); }
+
+function registerSales() { 
+    const skuSel=document.getElementById('so-sku-select'), customer=document.getElementById('so-customer').value, qty=document.getElementById('so-qty').value; 
+    if(!skuSel.value||!qty||!customer) return alert('정보누락'); 
+    
+    const list=JSON.parse(localStorage.getItem(DB_SALES))||[]; 
+    list.push({id:'SO-'+Date.now(), sku:skuSel.value, customer:customer, qty:parseInt(qty), status:'Ordered'}); 
+    localStorage.setItem(DB_SALES, JSON.stringify(list)); alert('등록완료'); closeModal('salesRegModal'); renderSalesPage(); 
+}
+
+// ... (출고 처리, 반품 관련 함수는 기존과 동일하게 유지) ...
 function openShipmentModal(soId) { const so=JSON.parse(localStorage.getItem(DB_SALES)).find(s=>s.id===soId); document.getElementById('ship-so-id').value=so.id; document.getElementById('ship-req-qty').value=so.qty; document.getElementById('ship-sku-hidden').value=so.sku; document.getElementById('ship-name-hidden').value=getProductInfo(so.sku).name; const lots=(JSON.parse(localStorage.getItem(DB_STOCK))||[]).filter(s=>s.sku===so.sku && s.qty>0); document.getElementById('ship-lot-select').innerHTML=lots.map(l=>`<option value="${l.lotId}">Lot:${l.lotId} (잔고:${l.qty})</option>`).join(''); openModal('shipmentModal'); }
 function confirmShipment() { const soId=document.getElementById('ship-so-id').value, lotId=document.getElementById('ship-lot-select').value, sku=document.getElementById('ship-sku-hidden').value, qty=parseInt(document.getElementById('ship-req-qty').value); if(updateStock('OUT', {sku, lotId, qty, refType:'수주출고', refId:soId})) { let list=JSON.parse(localStorage.getItem(DB_SALES)); let so=list.find(s=>s.id===soId); so.status='Shipped'; localStorage.setItem(DB_SALES, JSON.stringify(list)); alert('출고완료'); closeModal('shipmentModal'); renderSalesPage(); } }
-function renderReturnsPage() {
-    const list = JSON.parse(localStorage.getItem(DB_RETURNS)) || [];
-    const tbody = document.querySelector('#return-table tbody');
-    
-    // 테이블이 없으면 실행 중단 (오류 방지)
-    if (!tbody) return;
-
-    tbody.innerHTML = list.map(r => {
-        const p = getProductInfo(r.sku);
-        // 상태에 따른 뱃지 표시
-        let statusBadge = '';
-        if (r.status === 'Requested') statusBadge = '<span class="status-wait">승인대기</span>';
-        else if (r.status === 'Restocked') statusBadge = '<span class="status-done">재입고완료</span>';
-        else statusBadge = '<span class="status-danger">폐기완료</span>';
-
-        return `
-        <tr>
-            <td>${r.id}</td>
-            <td>${r.returnDate}</td>
-            <td>${p.name}</td>
-            <td>${r.qty}</td>
-            <td>${r.customer || '-'}</td>
-            <td>${statusBadge}</td>
-            <td>
-                ${r.status === 'Requested' 
-                    ? `<button class="btn-primary" onclick="openReturnProcessModal('${r.id}')">처리</button>` 
-                    : `<button onclick="openReturnDetailModal('${r.id}')">상세</button>`}
-            </td>
-        </tr>`;
-    }).join('');
-    
-    populateProductOptions('ret-sku-select');
-}
-function registerReturn() {
-    // HTML ID와 정확히 일치해야 함
-    const skuSel = document.getElementById('ret-sku-select');
-    const qty = document.getElementById('ret-qty').value;
-    const orgDate = document.getElementById('ret-org-date').value;
-    const customer = document.getElementById('ret-customer').value;
-    const reason = document.getElementById('ret-reason').value;
-
-    if (!skuSel.value || !qty || !orgDate) {
-        return alert('상품, 수량, 원래 구매일은 필수입니다.');
-    }
-
-    const list = JSON.parse(localStorage.getItem(DB_RETURNS)) || [];
-    
-    const newReturn = {
-        id: 'RT-' + Date.now(),
-        returnDate: new Date().toISOString().split('T')[0], // 오늘 접수
-        orgDate: orgDate,       // 원래 구매일
-        customer: customer,     // 고객사
-        sku: skuSel.value,
-        qty: parseInt(qty),
-        reason: reason,
-        status: 'Requested',    // 초기 상태
-        processDate: '',        // 아직 처리 안됨
-        actionType: ''          // 아직 결정 안됨
-    };
-
-    list.push(newReturn);
-    localStorage.setItem(DB_RETURNS, JSON.stringify(list));
-    
-    alert('반품 접수가 등록되었습니다.');
-    closeModal('returnRegModal');
-    renderReturnsPage();
-}
-
-function completeReturnProcess() {
-    const id = document.getElementById('proc-ret-id').value;
-    const action = document.getElementById('proc-action').value;
-    const procDate = document.getElementById('proc-date').value;
-
-    if (!procDate) return alert('처리 날짜를 입력해주세요.');
-
-    let list = JSON.parse(localStorage.getItem(DB_RETURNS)) || [];
-    let item = list.find(r => r.id === id);
-    
-    if (!item) return;
-
-    item.processDate = procDate;
-    item.actionType = action;
-
-    if (action === 'RESTOCK') {
-        // 재입고: 재고 증가 로직 호출
-        updateStock('IN', { 
-            sku: item.sku, 
-            qty: item.qty, 
-            lotId: 'LOT-RET-' + item.id, 
-            location: 'WH02-R-01', // 반품 전용 구역
-            refType: '반품재입고', 
-            refId: item.id,
-            date: procDate 
-        });
-        item.status = 'Restocked';
-        alert('반품 창고(WH02)로 재입고 되었습니다.');
-    } else {
-        // 폐기: 재고 반영 안 함 (상태만 변경)
-        item.status = 'Disposed';
-        alert('폐기 처리되었습니다. (재고 변동 없음)');
-    }
-
-    localStorage.setItem(DB_RETURNS, JSON.stringify(list));
-    closeModal('returnProcessModal');
-    renderReturnsPage();
-}
-
-function openReturnDetailModal(id) {
-    const list = JSON.parse(localStorage.getItem(DB_RETURNS)) || [];
-    const item = list.find(r => r.id === id);
-    const p = getProductInfo(item.sku);
-
-    // 상세 내용 HTML 생성
-    const detailHtml = `
-        <p><strong>반품 번호:</strong> ${item.id}</p>
-        <p><strong>진행 상태:</strong> ${item.status}</p>
-        <hr>
-        <p><strong>상품명:</strong> ${p.name}</p>
-        <p><strong>반품 수량:</strong> ${item.qty}개</p>
-        <p><strong>반품처(고객):</strong> ${item.customer || '(미입력)'}</p>
-        <p><strong>반품 사유:</strong> ${item.reason || '-'}</p>
-        <hr>
-        <p><strong>원래 구매일:</strong> ${item.orgDate}</p>
-        <p><strong>반품 접수일:</strong> ${item.returnDate}</p>
-        <p><strong>처리 완료일:</strong> ${item.processDate || '(처리중)'}</p>
-        <p><strong>처리 방식:</strong> ${item.actionType === 'RESTOCK' ? '재입고' : (item.actionType === 'DISPOSE' ? '폐기' : '-')}</p>
-    `;
-    
-    document.getElementById('detail-content').innerHTML = detailHtml;
-    openModal('returnDetailModal');
-}
+function renderReturnsPage() { const list = JSON.parse(localStorage.getItem(DB_RETURNS)) || []; document.querySelector('#return-table tbody').innerHTML = list.map(r => { const p = getProductInfo(r.sku); return `<tr><td>${r.id}</td><td>${r.returnDate}</td><td>${p.name}</td><td>${r.qty}</td><td>${r.customer||'-'}</td><td>${r.status==='Requested'?'<span class="status-wait">승인대기</span>':(r.status==='Restocked'?'<span class="status-done">재입고완료</span>':'<span class="status-danger">폐기완료</span>')}</td><td>${r.status==='Requested'?`<button class="btn-primary" onclick="openReturnProcessModal('${r.id}')">처리</button>`:`<button onclick="openReturnDetailModal('${r.id}')">상세</button>`}</td></tr>`; }).join(''); populateProductOptions('ret-sku-select'); }
+function registerReturn() { const skuSel=document.getElementById('ret-sku-select'), qty=document.getElementById('ret-qty').value, reason=document.getElementById('ret-reason').value, customer=document.getElementById('ret-customer').value, orgDate=document.getElementById('ret-org-date').value; if(!skuSel.value||!qty||!orgDate) return alert('필수정보 누락'); const list=JSON.parse(localStorage.getItem(DB_RETURNS))||[]; list.push({id:'RT-'+Date.now(), returnDate:new Date().toISOString().split('T')[0], orgDate:orgDate, customer:customer, sku:skuSel.value, qty:parseInt(qty), reason:reason, status:'Requested', processDate:null, actionType:null}); localStorage.setItem(DB_RETURNS, JSON.stringify(list)); alert('접수완료'); closeModal('returnRegModal'); renderReturnsPage(); }
+function completeReturnProcess() { const id=document.getElementById('proc-ret-id').value, action=document.getElementById('proc-action').value, procDate=document.getElementById('proc-date').value; if(!procDate)return alert('날짜입력'); let list=JSON.parse(localStorage.getItem(DB_RETURNS))||[], item=list.find(r=>r.id===id); item.processDate=procDate; item.actionType=action; if(action==='RESTOCK'){ updateStock('IN', {sku:item.sku, qty:item.qty, lotId:'LOT-RET-'+item.id, location:'WH02-R-01', refType:'반품재입고', refId:item.id, date:procDate}); item.status='Restocked'; alert('재입고완료'); } else{ item.status='Disposed'; alert('폐기완료'); } localStorage.setItem(DB_RETURNS, JSON.stringify(list)); closeModal('returnProcessModal'); renderReturnsPage(); }
+function openReturnDetailModal(id) { const item=(JSON.parse(localStorage.getItem(DB_RETURNS))||[]).find(r=>r.id===id); const p=getProductInfo(item.sku); const h=`<p><strong>반품ID:</strong> ${item.id}</p><p><strong>상품:</strong> ${p.name}</p><p><strong>고객:</strong> ${item.customer}</p><hr><p><strong>접수일:</strong> ${item.returnDate}</p><p><strong>원거래일:</strong> ${item.orgDate}</p><p><strong>처리일:</strong> ${item.processDate||'-'}</p><p><strong>결과:</strong> ${item.status} (${item.actionType||'-'})</p><p><strong>사유:</strong> ${item.reason}</p>`; document.getElementById('detail-content').innerHTML=h; openModal('returnDetailModal'); }
 
 // --- 유틸 ---
+// [신규] 거래처 이름 찾기
+function getPartnerName(id) {
+    const partners = JSON.parse(localStorage.getItem(DB_PARTNERS)) || [];
+    const found = partners.find(p => p.id === id);
+    return found ? found.name : id;
+}
+
+// [신규] 거래처 드롭다운 생성 (type: '공급처' or '고객사')
+function populatePartnerOptions(selectId, type) {
+    const el = document.getElementById(selectId);
+    if (!el) return;
+    
+    const partners = JSON.parse(localStorage.getItem(DB_PARTNERS)) || [];
+    // 타입에 맞는 거래처만 필터링
+    const filtered = partners.filter(p => p.type === type);
+    
+    el.innerHTML = `<option value="">${type} 선택</option>` + 
+        filtered.map(p => `<option value="${p.id}">${p.name} (${p.manager})</option>`).join('');
+}
+
 function populateProductOptions(id) { const el=document.getElementById(id); if(el) el.innerHTML='<option value="">상품 선택</option>'+(JSON.parse(localStorage.getItem(DB_PRODUCTS))||[]).map(p=>`<option value="${p.sku}">${p.name}</option>`).join(''); }
 function populateLocationOptions(id) { const el=document.getElementById(id); if(el) el.innerHTML='<option value="">로케이션 선택</option>'+(JSON.parse(localStorage.getItem(DB_LOCATIONS))||[]).map(l=>`<option value="${l.id}">${l.id} (${l.desc})</option>`).join(''); }
 function initializeTabs() { document.querySelectorAll('.tab-link').forEach(btn=>{btn.addEventListener('click',(e)=>{const t=e.target.dataset.tab; document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active')); document.querySelectorAll('.tab-link').forEach(b=>b.classList.remove('active')); document.getElementById(t).classList.add('active'); e.target.classList.add('active');});}); }
-function openModal(id) { if(id==='purchaseModal'){populateProductOptions('po-sku-select');populateLocationOptions('po-location');} if(id==='salesRegModal')populateProductOptions('so-sku-select'); if(id==='returnRegModal')populateProductOptions('ret-sku-select'); document.getElementById(id).style.display='block'; }
-function closeModal(id) { document.getElementById(id).style.display='none'; }
-function openReturnProcessModal(id) {
-    document.getElementById('proc-ret-id').value = id;
-    // 처리 날짜 기본값 오늘로 세팅
-    document.getElementById('proc-date').value = new Date().toISOString().split('T')[0];
-    openModal('returnProcessModal');
+
+// [수정] 모달 열 때 거래처 정보도 갱신
+function openModal(id) { 
+    if(id==='purchaseModal'){ 
+        populateProductOptions('po-sku-select'); 
+        populateLocationOptions('po-location');
+        populatePartnerOptions('po-partner', '공급처'); // 공급처 목록 로드
+    } 
+    if(id==='salesRegModal') {
+        populateProductOptions('so-sku-select');
+        populatePartnerOptions('so-customer', '고객사'); // 고객사 목록 로드
+    }
+    if(id==='returnRegModal') populateProductOptions('ret-sku-select'); 
+    
+    const m = document.getElementById(id);
+    if(m) m.style.display='block'; 
 }
+function closeModal(id) { document.getElementById(id).style.display='none'; }
+function openReturnProcessModal(id) { document.getElementById('proc-ret-id').value=id; openModal('returnProcessModal'); }
