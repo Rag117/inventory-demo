@@ -352,3 +352,41 @@ function openModal(id) {
 }
 function closeModal(id) { document.getElementById(id).style.display='none'; }
 function openReturnProcessModal(id) { document.getElementById('proc-ret-id').value=id; openModal('returnProcessModal'); }
+
+// [신규] 거래처 드롭다운 생성 (type: '공급처' or '고객사')
+function populatePartnerOptions(selectId, type) {
+    const el = document.getElementById(selectId);
+    if (!el) return;
+    
+    const partners = JSON.parse(localStorage.getItem(DB_PARTNERS)) || [];
+    // 1. 타입에 맞는 거래처 필터링
+    const filtered = partners.filter(p => p.type === type);
+    
+    // 2. 드롭다운 HTML 생성
+    if (filtered.length === 0) {
+        el.innerHTML = `<option value="">등록된 ${type} 없음 (기준정보 확인)</option>`;
+    } else {
+        el.innerHTML = `<option value="">${type} 선택</option>` + 
+            filtered.map(p => `<option value="${p.id}">${p.name} (${p.manager})</option>`).join('');
+    }
+}
+
+// [수정] 모달 열 때 거래처 정보도 갱신
+function openModal(id) { 
+    if(id==='purchaseModal'){ 
+        populateProductOptions('po-sku-select'); 
+        populateLocationOptions('po-location');
+        populatePartnerOptions('po-partner', '공급처'); // [중요] 공급처 목록 로드
+    } 
+    if(id==='salesRegModal') {
+        populateProductOptions('so-sku-select');
+        populatePartnerOptions('so-customer', '고객사'); // [중요] 고객사 목록 로드
+    }
+    if(id==='returnRegModal') {
+        populateProductOptions('ret-sku-select');
+        populatePartnerOptions('ret-customer', '고객사'); // [중요] 반품처(고객) 목록 로드
+    }
+    
+    const m = document.getElementById(id);
+    if(m) m.style.display='block'; 
+}
