@@ -61,16 +61,18 @@
                     <input type="number" id="ret-qty" value="1">
                 </div>
                 <div class="form-group">
-                    <label>원래 구매일 (Original Date)</label>
+                    <label>원래 구매일</label>
                     <input type="date" id="ret-org-date">
                 </div>
                 <div class="form-group">
-                    <label>반품처 (고객명/사이트)</label>
-                    <input type="text" id="ret-customer" placeholder="예: 냥이월드">
+                    <label>반품처 (고객사 선택)</label>
+                    <select id="ret-customer" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                        <option value="">로딩 중...</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label>반품 사유</label>
-                    <input type="text" id="ret-reason" placeholder="예: 배송 중 파손, 단순 변심">
+                    <input type="text" id="ret-reason" placeholder="예: 배송 중 파손">
                 </div>
             </div>
             <div class="modal-footer">
